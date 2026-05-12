@@ -3,12 +3,6 @@ from typing import Optional, List
 import secrets
 import os
 
-# إذا وُجد EXTERNAL_DATABASE_URL يأخذ الأولوية — نكتب فوق DATABASE_URL مباشرة
-if os.environ.get("EXTERNAL_DATABASE_URL"):
-    os.environ["DATABASE_URL"] = os.environ["EXTERNAL_DATABASE_URL"]
-
-_db_url = os.environ.get("DATABASE_URL", "postgresql://localhost/health_is_first")
-
 
 class Settings(BaseSettings):
     # App
@@ -18,9 +12,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str = secrets.token_urlsafe(32)
     API_V1_PREFIX: str = "/api/v1"
 
-    # Database
-    DATABASE_URL: str = _db_url
-    DATABASE_SYNC_URL: str = _db_url
+    # Database - Replit provides DATABASE_URL automatically
+    DATABASE_URL: str = os.environ.get("DATABASE_URL", "postgresql://localhost/health_is_first")
+    DATABASE_SYNC_URL: str = ""
 
     @property
     def async_db_url(self) -> str:

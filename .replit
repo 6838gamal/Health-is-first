@@ -5,7 +5,7 @@ stack = "BEST_EFFORT_FALLBACK"
 
 [nix]
 channel = "stable-25_05"
-packages = ["freetype", "lcms2", "libimagequant", "libjpeg", "libtiff", "libwebp", "libxcrypt", "openjpeg", "postgresql", "tcl", "tk", "zlib"]
+packages = ["ffmpeg-full", "freetype", "imagemagickBig", "lcms2", "libGL", "libimagequant", "libjpeg", "libtiff", "libwebp", "libxcrypt", "openjpeg", "postgresql", "tcl", "tk", "zlib"]
 
 [workflows]
 runButton = "Project"
@@ -28,12 +28,16 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python main.py"
+args = "redis-server --daemonize yes --logfile /tmp/redis.log 2>/dev/null; python main.py"
 waitForPort = 5000
 
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 6379
+externalPort = 3000
 
 [userenv]
 
@@ -69,4 +73,5 @@ LOG_FILE = "logs/app.log"
 REDIS_URL = "redis://localhost:6379/0"
 CELERY_BROKER_URL = "redis://localhost:6379/0"
 CELERY_RESULT_BACKEND = "redis://localhost:6379/1"
-EXTERNAL_DATABASE_URL = "postgresql://gamalalmaqtary:wjgw2u0I4NOXkWIWu87zLQOMvVtVmuTa@dpg-d81fss7aqgkc73aumg90-a/health_is_first_db"
+JWT_SECRET_KEY = "c7cad29bb50ce2503b5e39681f5a410ff49fb5080b505d8e252bc8797756635d"
+SECRET_KEY = "c7cad29bb50ce2503b5e39681f5a410ff49fb5080b505d8e252bc8797756635d"
