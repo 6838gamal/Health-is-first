@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Health is First - لوحة التحكم{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        :root {
+            --primary: #e94560;
+            --secondary: #1a1a2e;
+            --accent: #16213e;
+            --card-bg: #0f3460;
+            --text-light: #e2e8f0;
+            --success: #52b788;
+            --warning: #f4a261;
+            --danger: #e63946;
+            --info: #4cc9f0;
+        }
+        * { font-family: 'Cairo', sans-serif; }
+        body { background: var(--secondary); color: var(--text-light); min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--accent);
+            width: 260px;
+            min-height: 100vh;
+            position: fixed;
+            right: 0;
+            top: 0;
+            z-index: 1000;
+            border-left: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.3s;
+        }
+        .sidebar-brand {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            background: linear-gradient(135deg, var(--primary), #c1121f);
+        }
+        .sidebar-brand h4 { color: #fff; margin: 0; font-weight: 900; font-size: 1.1rem; }
+        .sidebar-brand small { color: rgba(255,255,255,0.8); font-size: 0.75rem; }
+        .sidebar .nav-link {
+            color: var(--text-light);
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            margin: 2px 10px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background: var(--primary);
+            color: #fff;
+            transform: translateX(-4px);
+        }
+        .sidebar .nav-link i { width: 20px; text-align: center; margin-left: 8px; }
+        .sidebar-section-title {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.7rem;
+            padding: 1rem 1.5rem 0.3rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-right: 260px;
+            padding: 1.5rem;
+            min-height: 100vh;
+        }
+
+        /* Topbar */
+        .topbar {
+            background: var(--accent);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        /* Cards */
+        .stat-card {
+            background: var(--accent);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.06);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-4px); }
+        .stat-card .stat-icon {
+            width: 54px; height: 54px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; margin-bottom: 1rem;
+        }
+        .stat-card .stat-value { font-size: 2rem; font-weight: 900; color: #fff; }
+        .stat-card .stat-label { color: rgba(255,255,255,0.5); font-size: 0.85rem; }
+
+        /* Content Cards */
+        .content-card {
+            background: var(--accent);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.06);
+            overflow: hidden;
+        }
+        .content-card .card-header {
+            background: rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 1rem 1.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .content-card .card-body { padding: 1.5rem; }
+
+        /* Tables */
+        .table { color: var(--text-light); }
+        .table thead th {
+            border-color: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .table tbody tr { border-color: rgba(255,255,255,0.04); }
+        .table tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+        /* Badges */
+        .badge-status { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .status-pending { background: rgba(244,162,97,0.2); color: var(--warning); }
+        .status-review { background: rgba(76,201,240,0.2); color: var(--info); }
+        .status-approved { background: rgba(82,183,136,0.2); color: var(--success); }
+        .status-published { background: rgba(82,183,136,0.3); color: var(--success); }
+        .status-failed { background: rgba(230,57,70,0.2); color: var(--danger); }
+        .status-rejected { background: rgba(230,57,70,0.2); color: var(--danger); }
+        .status-rendering { background: rgba(76,201,240,0.2); color: var(--info); }
+        .status-scheduled { background: rgba(244,162,97,0.2); color: var(--warning); }
+
+        /* Buttons */
+        .btn-primary { background: var(--primary); border-color: var(--primary); }
+        .btn-primary:hover { background: #c1121f; border-color: #c1121f; }
+        .btn-outline-primary { color: var(--primary); border-color: var(--primary); }
+        .btn-outline-primary:hover { background: var(--primary); }
+
+        /* Progress */
+        .progress { background: rgba(255,255,255,0.1); border-radius: 10px; height: 6px; }
+        .progress-bar { background: var(--primary); border-radius: 10px; }
+
+        /* Alert */
+        .alert { border-radius: 12px; border: none; }
+        .alert-success { background: rgba(82,183,136,0.15); color: var(--success); }
+        .alert-danger { background: rgba(230,57,70,0.15); color: var(--danger); }
+        .alert-info { background: rgba(76,201,240,0.15); color: var(--info); }
+        .alert-warning { background: rgba(244,162,97,0.15); color: var(--warning); }
+
+        /* Pipeline steps */
+        .pipeline-step {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 16px; border-radius: 10px;
+            background: rgba(255,255,255,0.04); margin-bottom: 8px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .pipeline-step .step-icon {
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; flex-shrink: 0;
+        }
+
+        /* Toast notifications */
+        .toast-container { position: fixed; top: 20px; left: 20px; z-index: 9999; }
+
+        /* Loader */
+        .htmx-indicator { display: none; }
+        .htmx-request .htmx-indicator { display: inline-block; }
+        .htmx-request.htmx-indicator { display: inline-block; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { width: 0; overflow: hidden; }
+            .main-content { margin-right: 0; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <div class="d-flex align-items-center gap-2">
+                <span style="font-size: 1.8rem;">💚</span>
+                <div>
+                    <h4>Health is First</h4>
+                    <small>الصحة أولاً - نظام الأتمتة</small>
+                </div>
+            </div>
+        </div>
+        <div class="py-3">
+            <div class="sidebar-section-title">الرئيسية</div>
+            <a href="/dashboard" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+                <i class="fas fa-chart-pie"></i> لوحة التحكم
+            </a>
+
+            <div class="sidebar-section-title">إدارة المحتوى</div>
+            <a href="/dashboard/trends" class="nav-link {% if active_page == 'trends' %}active{% endif %}">
+                <i class="fas fa-fire"></i> الترندات
+            </a>
+            <a href="/dashboard/ideas" class="nav-link {% if active_page == 'ideas' %}active{% endif %}">
+                <i class="fas fa-lightbulb"></i> الأفكار
+            </a>
+            <a href="/dashboard/scripts" class="nav-link {% if active_page == 'scripts' %}active{% endif %}">
+                <i class="fas fa-file-alt"></i> السكريبتات
+            </a>
+
+            <div class="sidebar-section-title">الفيديو والنشر</div>
+            <a href="/dashboard/videos" class="nav-link {% if active_page == 'videos' %}active{% endif %}">
+                <i class="fas fa-video"></i> الفيديوهات
+            </a>
+            <a href="/dashboard/review" class="nav-link {% if active_page == 'review' %}active{% endif %}">
+                <i class="fas fa-check-circle"></i> المراجعة
+                {% if pending_review_count and pending_review_count > 0 %}
+                <span class="badge bg-danger rounded-pill ms-2">{{ pending_review_count }}</span>
+                {% endif %}
+            </a>
+            <a href="/dashboard/schedule" class="nav-link {% if active_page == 'schedule' %}active{% endif %}">
+                <i class="fas fa-calendar-alt"></i> الجدولة
+            </a>
+
+            <div class="sidebar-section-title">التحليلات والنظام</div>
+            <a href="/dashboard/analytics" class="nav-link {% if active_page == 'analytics' %}active{% endif %}">
+                <i class="fas fa-chart-line"></i> التحليلات
+            </a>
+            <a href="/dashboard/jobs" class="nav-link {% if active_page == 'jobs' %}active{% endif %}">
+                <i class="fas fa-cogs"></i> المهام التلقائية
+            </a>
+            <a href="/dashboard/pipeline" class="nav-link {% if active_page == 'pipeline' %}active{% endif %}">
+                <i class="fas fa-stream"></i> خط الإنتاج
+            </a>
+
+            <div class="sidebar-section-title">الإعدادات</div>
+            <a href="/docs" target="_blank" class="nav-link">
+                <i class="fas fa-book"></i> API Docs
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div>
+                <h5 class="mb-0 fw-bold">{% block page_title %}لوحة التحكم{% endblock %}</h5>
+                <small class="text-muted">{% block page_subtitle %}{% endblock %}</small>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-sm btn-outline-primary" 
+                        hx-post="/dashboard/api/run-pipeline"
+                        hx-swap="none"
+                        hx-indicator="#pipeline-spinner"
+                        onclick="showToast('تم تشغيل خط الإنتاج', 'success')">
+                    <span id="pipeline-spinner" class="htmx-indicator spinner-border spinner-border-sm me-1"></span>
+                    <i class="fas fa-play-circle me-1"></i> تشغيل الأتمتة
+                </button>
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:35px;height:35px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-user text-white" style="font-size:0.8rem;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:0.85rem;font-weight:600;">مدير النظام</div>
+                        <div style="font-size:0.7rem;color:rgba(255,255,255,0.5);">Admin</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: '#52b788', danger: '#e63946', info: '#4cc9f0', warning: '#f4a261'
+            };
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                background: #16213e; border: 1px solid ${colors[type] || colors.info};
+                color: ${colors[type] || colors.info}; padding: 12px 20px;
+                border-radius: 10px; margin-bottom: 10px; font-size: 0.9rem;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.4); min-width: 250px;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.innerHTML = `<i class="fas fa-circle-check me-2"></i>${message}`;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        // Auto-refresh stats every 30 seconds
+        setInterval(() => {
+            if (typeof htmx !== 'undefined') {
+                document.querySelectorAll('[hx-trigger="every 30s"]').forEach(el => htmx.trigger(el, 'refresh'));
+            }
+        }, 30000);
+
+        // HTMX event handlers
+        document.body.addEventListener('htmx:afterRequest', function(evt) {
+            if (evt.detail.successful) {
+                const msg = evt.detail.xhr.getResponseHeader('X-Toast-Message');
+                if (msg) showToast(msg, 'success');
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

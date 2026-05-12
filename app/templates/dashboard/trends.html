@@ -1,0 +1,96 @@
+{% extends "dashboard/base.html" %}
+{% block title %}الترندات - Health is First{% endblock %}
+{% block page_title %}الترندات الصحية{% endblock %}
+{% block page_subtitle %}الترندات المجمعة من المصادر المختلفة{% endblock %}
+
+{% block content %}
+<div class="d-flex gap-2 mb-4">
+    <button class="btn btn-primary"
+            hx-post="/dashboard/api/collect-trends" hx-swap="none"
+            onclick="showToast('جاري جمع الترندات...', 'info')">
+        <i class="fas fa-fire me-2"></i>جمع الترندات
+    </button>
+    <button class="btn btn-outline-primary"
+            hx-post="/dashboard/api/collect-rss" hx-swap="none"
+            onclick="showToast('جاري جمع RSS...', 'info')">
+        <i class="fas fa-rss me-2"></i>جمع RSS
+    </button>
+    <button class="btn btn-outline-primary"
+            hx-post="/dashboard/api/generate-ideas" hx-swap="none"
+            onclick="showToast('جاري توليد الأفكار...', 'info')">
+        <i class="fas fa-lightbulb me-2"></i>توليد الأفكار
+    </button>
+</div>
+
+<div class="content-card">
+    <div class="card-header">
+        <i class="fas fa-fire me-2" style="color:var(--primary)"></i>
+        الترندات الصحية ({{ trends|length }} ترند)
+    </div>
+    <div class="card-body p-0">
+        {% if trends %}
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>العنوان</th>
+                        <th>الفئة</th>
+                        <th>نقاط الترند</th>
+                        <th>الجودة</th>
+                        <th>الحالة</th>
+                        <th>التاريخ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trend in trends %}
+                    <tr>
+                        <td>
+                            <div style="max-width:300px;">
+                                <div style="font-size:0.85rem;font-weight:600;">{{ trend.title[:70] }}</div>
+                                {% if trend.summary %}
+                                <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);">{{ trend.summary[:80] }}...</div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            {% if trend.category %}
+                            <span style="background:rgba(233,69,96,0.15);color:#e94560;padding:3px 10px;border-radius:12px;font-size:0.75rem;">
+                                {{ trend.category }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress flex-grow-1" style="height:5px;width:60px;">
+                                    <div class="progress-bar" style="width:{{ (trend.trend_score * 100)|int }}%"></div>
+                                </div>
+                                <span style="font-size:0.8rem;">{{ "%.1f"|format(trend.trend_score) }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span style="font-size:0.85rem;color:{% if trend.quality_score > 0.7 %}#52b788{% elif trend.quality_score > 0.4 %}#f4a261{% else %}#e63946{% endif %};">
+                                {{ "%.0f%%"|format(trend.quality_score * 100) }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if trend.is_processed %}
+                            <span style="color:#52b788;font-size:0.8rem;"><i class="fas fa-check-circle"></i> معالج</span>
+                            {% else %}
+                            <span style="color:#f4a261;font-size:0.8rem;"><i class="fas fa-clock"></i> معلق</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:0.8rem;color:rgba(255,255,255,0.4);">{{ trend.created_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5" style="color:rgba(255,255,255,0.3)">
+            <i class="fas fa-fire fa-3x mb-3 d-block"></i>
+            <p>لا توجد ترندات بعد. اضغط "جمع الترندات" للبدء</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "dashboard/base.html" %}
+{% block title %}الفيديوهات - Health is First{% endblock %}
+{% block page_title %}إدارة الفيديوهات{% endblock %}
+{% block page_subtitle %}جميع الفيديوهات في النظام{% endblock %}
+
+{% block content %}
+<!-- Stats Bar -->
+<div class="row g-3 mb-4">
+    {% set status_data = [
+        ('pending', 'معلق', '#f4a261'),
+        ('review', 'مراجعة', '#4cc9f0'),
+        ('approved', 'مُوافق', '#52b788'),
+        ('published', 'منشور', '#52b788'),
+        ('failed', 'فشل', '#e63946'),
+    ] %}
+    {% for s, label, color in status_data %}
+    <div class="col">
+        <div class="stat-card text-center" style="cursor:pointer" onclick="window.location='/dashboard/review?status={{ s }}'">
+            <div class="stat-value" style="color:{{ color }};font-size:1.5rem;">{{ counts.get(s, 0) }}</div>
+            <div class="stat-label">{{ label }}</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Videos Table -->
+<div class="content-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-video me-2" style="color:var(--primary)"></i> قائمة الفيديوهات</span>
+        <div class="d-flex gap-2">
+            <select class="form-select form-select-sm"
+                    style="background:#0d1b2a;border:1px solid rgba(255,255,255,0.1);color:#fff;width:auto;"
+                    onchange="window.location='/dashboard/videos?status='+this.value">
+                <option value="">كل الحالات</option>
+                {% for s, label, color in status_data %}
+                <option value="{{ s }}" {% if current_status == s %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if videos %}
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>العنوان</th>
+                        <th>الحالة</th>
+                        <th>المدة</th>
+                        <th>الحجم</th>
+                        <th>يوتيوب</th>
+                        <th>التاريخ</th>
+                        <th>الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for video in videos %}
+                    <tr>
+                        <td>
+                            <div style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.85rem;">
+                                {{ video.title }}
+                            </div>
+                        </td>
+                        <td><span class="badge-status status-{{ video.status }}">{{ video.status }}</span></td>
+                        <td style="font-size:0.85rem;">{{ video.duration|int if video.duration else '-' }}s</td>
+                        <td style="font-size:0.85rem;color:rgba(255,255,255,0.5);">
+                            {{ "%.1f"|format(video.file_size / 1024 / 1024) if video.file_size else '-' }}MB
+                        </td>
+                        <td>
+                            {% if video.youtube_url %}
+                            <a href="{{ video.youtube_url }}" target="_blank" style="color:#ff4444;">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                            {% else %}
+                            <span style="color:rgba(255,255,255,0.2)">-</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:0.8rem;color:rgba(255,255,255,0.5);">
+                            {{ video.created_at.strftime('%m/%d %H:%M') if video.created_at else '-' }}
+                        </td>
+                        <td>
+                            {% if video.status == 'review' %}
+                            <a href="/dashboard/review/{{ video.id }}" class="btn btn-sm btn-primary">مراجعة</a>
+                            {% elif video.status == 'failed' %}
+                            <button class="btn btn-sm btn-warning"
+                                    hx-post="/dashboard/api/videos/{{ video.id }}/regenerate"
+                                    hx-swap="none"
+                                    onclick="showToast('جاري إعادة الإنتاج...', 'warning')">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                            {% else %}
+                            <a href="/dashboard/review/{{ video.id }}" class="btn btn-sm btn-outline-secondary btn-sm">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5" style="color:rgba(255,255,255,0.3)">
+            <i class="fas fa-video fa-3x mb-3 d-block"></i>
+            <p>لا توجد فيديوهات</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

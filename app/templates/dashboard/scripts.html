@@ -1,0 +1,73 @@
+{% extends "dashboard/base.html" %}
+{% block title %}السكريبتات - Health is First{% endblock %}
+{% block page_title %}إدارة السكريبتات{% endblock %}
+{% block page_subtitle %}السكريبتات المولّدة بالذكاء الاصطناعي{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-file-alt me-2" style="color:var(--primary)"></i> قائمة السكريبتات</span>
+        <span style="color:rgba(255,255,255,0.4);font-size:0.85rem;">{{ scripts|length }} سكريبت</span>
+    </div>
+    <div class="card-body p-0">
+        {% if scripts %}
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>العنوان</th>
+                        <th>الحالة</th>
+                        <th>المدة التقديرية</th>
+                        <th>اللغة</th>
+                        <th>السلامة</th>
+                        <th>التاريخ</th>
+                        <th>الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for script in scripts %}
+                    <tr>
+                        <td>
+                            <div style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.85rem;">
+                                {{ script.title }}
+                            </div>
+                        </td>
+                        <td><span class="badge-status status-{{ script.status }}">{{ script.status }}</span></td>
+                        <td style="font-size:0.85rem;">{{ script.estimated_duration or '-' }}s</td>
+                        <td>
+                            <span style="font-size:0.8rem;background:rgba(255,255,255,0.05);padding:2px 8px;border-radius:10px;">
+                                {{ script.language.upper() }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if script.safety_approved %}
+                            <i class="fas fa-shield-alt" style="color:#52b788;" title="آمن طبياً"></i>
+                            {% else %}
+                            <i class="fas fa-exclamation-triangle" style="color:#f4a261;" title="يحتاج مراجعة"></i>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:0.8rem;color:rgba(255,255,255,0.4);">{{ script.created_at }}</td>
+                        <td>
+                            {% if script.status in ['review', 'approved'] %}
+                            <button class="btn btn-sm btn-primary"
+                                    hx-post="/api/v1/videos/render/{{ script.id }}"
+                                    hx-swap="none"
+                                    onclick="showToast('جاري إنتاج الفيديو...', 'info')">
+                                <i class="fas fa-video me-1"></i> إنتاج
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5" style="color:rgba(255,255,255,0.3)">
+            <i class="fas fa-file-alt fa-3x mb-3 d-block"></i>
+            <p>لا توجد سكريبتات. قم بتوليد الأفكار أولاً</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

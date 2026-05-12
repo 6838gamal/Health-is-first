@@ -1,0 +1,44 @@
+/* Health is First - Custom Styles */
+:root {
+    --primary: #e94560;
+    --secondary: #1a1a2e;
+    --accent: #16213e;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--secondary); }
+::-webkit-scrollbar-thumb { background: rgba(233, 69, 96, 0.5); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* Animations */
+@keyframes slideIn {
+    from { transform: translateX(100px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.4); }
+    50% { box-shadow: 0 0 20px 5px rgba(233, 69, 96, 0.2); }
+}
+
+.pulse { animation: pulse-glow 2s infinite; }
+.slide-in { animation: slideIn 0.3s ease; }
+
+/* Video card hover effect */
+.video-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.video-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Status indicator dot */
+.status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    display: inline-block; margin-left: 6px;
+}
+.status-dot.active { background: #52b788; animation: pulse-glow 2s infinite; }
+.status-dot.idle { background: rgba(255,255,255,0.3); }
+.status-dot.error { background: #e63946; }

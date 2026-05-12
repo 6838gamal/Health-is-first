@@ -1,0 +1,89 @@
+{% extends "dashboard/base.html" %}
+{% block title %}التحليلات - Health is First{% endblock %}
+{% block page_title %}التحليلات{% endblock %}
+{% block page_subtitle %}تحليل أداء المحتوى على يوتيوب{% endblock %}
+
+{% block content %}
+<!-- Overview Stats -->
+<div class="row g-3 mb-4">
+    {% set metric_cards = [
+        (overview.total_views, 'المشاهدات', 'fa-eye', '#52b788'),
+        (overview.total_likes, 'الإعجابات', 'fa-thumbs-up', '#e94560'),
+        (overview.total_comments, 'التعليقات', 'fa-comment', '#4cc9f0'),
+        (overview.total_published_videos, 'فيديوهات منشورة', 'fa-video', '#f4a261'),
+    ] %}
+    {% for val, label, icon, color in metric_cards %}
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: {{ color }}20; color: {{ color }}">
+                <i class="fas {{ icon }}"></i>
+            </div>
+            <div class="stat-value">{{ "{:,}".format(val|int) }}</div>
+            <div class="stat-label">{{ label }}</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Top Videos Table -->
+<div class="content-card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-trophy me-2" style="color:var(--primary)"></i> أفضل الفيديوهات</span>
+        <button class="btn btn-sm btn-outline-primary"
+                hx-post="/dashboard/api/sync-analytics" hx-swap="none"
+                onclick="showToast('جاري مزامنة التحليلات...', 'info')">
+            <i class="fas fa-sync me-1"></i> تحديث
+        </button>
+    </div>
+    <div class="card-body p-0">
+        {% if top_videos %}
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>الفيديو</th>
+                        <th>المشاهدات</th>
+                        <th>الإعجابات</th>
+                        <th>التعليقات</th>
+                        <th>CTR</th>
+                        <th>الاحتفاظ</th>
+                        <th>رابط</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in top_videos %}
+                    <tr>
+                        <td style="color:rgba(255,255,255,0.4)">{{ loop.index }}</td>
+                        <td>
+                            <div style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.85rem;" title="{{ item.title }}">
+                                {{ item.title }}
+                            </div>
+                        </td>
+                        <td><strong>{{ "{:,}".format(item.views) }}</strong></td>
+                        <td>{{ "{:,}".format(item.likes) }}</td>
+                        <td>{{ "{:,}".format(item.comments) }}</td>
+                        <td>{{ "%.1f%%"|format(item.ctr) }}</td>
+                        <td>{{ "%.1f%%"|format(item.avg_view_percentage) }}</td>
+                        <td>
+                            {% if item.youtube_url %}
+                            <a href="{{ item.youtube_url }}" target="_blank" style="color:var(--primary)">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5" style="color:rgba(255,255,255,0.3)">
+            <i class="fas fa-chart-line fa-3x mb-3 d-block"></i>
+            <p>لا توجد بيانات تحليلية بعد</p>
+            <p style="font-size:0.8rem;">قم بنشر فيديوهات أولاً ثم زامن التحليلات</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
