@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
-from typing import Optional, List
+from pydantic import model_validator
+from typing import Optional
 import secrets
 import os
 
@@ -12,9 +13,16 @@ class Settings(BaseSettings):
     SECRET_KEY: str = secrets.token_urlsafe(32)
     API_V1_PREFIX: str = "/api/v1"
 
-    # Database - Replit provides DATABASE_URL automatically
-    DATABASE_URL: str = os.environ.get("DATABASE_URL", "postgresql://localhost/health_is_first")
+    # Database — EXTERNAL_DATABASE_URL takes priority over Replit's managed DATABASE_URL
+    DATABASE_URL: str = "postgresql://localhost/health_is_first"
     DATABASE_SYNC_URL: str = ""
+    EXTERNAL_DATABASE_URL: str = ""
+
+    @model_validator(mode="after")
+    def set_database_url(self) -> "Settings":
+        if self.EXTERNAL_DATABASE_URL:
+            self.DATABASE_URL = self.EXTERNAL_DATABASE_URL
+        return self
 
     @property
     def async_db_url(self) -> str:
