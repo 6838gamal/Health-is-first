@@ -13,8 +13,8 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api/v1"
 
     # Database - uses Replit's built-in PostgreSQL via DATABASE_URL secret
-    DATABASE_URL: str = "sqlite+aiosqlite:///./health_is_first.db"
-    DATABASE_SYNC_URL: str = "sqlite:///./health_is_first.db"
+    DATABASE_URL: str = "postgresql+asyncpg://localhost/health_is_first"
+    DATABASE_SYNC_URL: str = "postgresql://localhost/health_is_first"
 
     @property
     def async_db_url(self) -> str:
