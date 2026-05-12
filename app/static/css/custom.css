@@ -1,44 +1,73 @@
 /* Health is First - Custom Styles */
 :root {
     --primary: #e94560;
-    --secondary: #1a1a2e;
-    --accent: #16213e;
+    --secondary: #0d1117;
+    --surface: #161b22;
+    --surface-2: #1c2333;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--secondary); }
-::-webkit-scrollbar-thumb { background: rgba(233, 69, 96, 0.5); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
 /* Animations */
-@keyframes slideIn {
-    from { transform: translateX(100px); opacity: 0; }
+@keyframes slideInRight {
+    from { transform: translateX(40px); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
 }
-
+@keyframes fadeUp {
+    from { transform: translateY(16px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
 @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.4); }
-    50% { box-shadow: 0 0 20px 5px rgba(233, 69, 96, 0.2); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(233,69,96,0.3); }
+    50% { box-shadow: 0 0 12px 4px rgba(233,69,96,0.15); }
 }
 
+.anim-fade-up { animation: fadeUp 0.25s ease; }
 .pulse { animation: pulse-glow 2s infinite; }
-.slide-in { animation: slideIn 0.3s ease; }
 
-/* Video card hover effect */
-.video-card {
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-.video-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-}
+/* Page transitions */
+.page-content > * { animation: fadeUp 0.2s ease; }
 
-/* Status indicator dot */
+/* Status dot */
 .status-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    display: inline-block; margin-left: 6px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 5px;
+    vertical-align: middle;
 }
-.status-dot.active { background: #52b788; animation: pulse-glow 2s infinite; }
-.status-dot.idle { background: rgba(255,255,255,0.3); }
-.status-dot.error { background: #e63946; }
+.status-dot.online { background: #3fb950; box-shadow: 0 0 6px rgba(63,185,80,0.5); }
+.status-dot.offline { background: rgba(255,255,255,0.2); }
+.status-dot.error { background: #f85149; }
+
+/* Video card hover */
+.c-card { transition: box-shadow 0.2s ease; }
+.c-card:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.25); }
+
+/* Mobile touch improvements */
+@media (max-width: 768px) {
+    .btn { min-height: 38px; }
+    .data-table tbody td { padding: 0.6rem 0.75rem; }
+    .data-table thead th { padding: 0.6rem 0.75rem; }
+    .c-card-header { padding: 0.75rem 1rem; }
+    .c-card-body { padding: 1rem; }
+    .stat-card { padding: 1rem; }
+    .stat-card .stat-value { font-size: 1.5rem; }
+}
+
+/* Smooth row highlight */
+.data-table tbody tr {
+    transition: background 0.12s ease;
+}
+
+/* Form focus rings */
+.form-control:focus, .form-select:focus, textarea:focus {
+    outline: none;
+}
+
+/* Tooltip custom */
+[title] { cursor: help; }

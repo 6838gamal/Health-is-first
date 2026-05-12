@@ -1,30 +1,32 @@
 {% extends "dashboard/base.html" %}
-{% block title %}المهام التلقائية - Health is First{% endblock %}
-{% block page_title %}المهام التلقائية{% endblock %}
-{% block page_subtitle %}مراقبة وإدارة مهام Celery{% endblock %}
+{% block title %}سجل المهام - Health is First{% endblock %}
+{% block page_title %}سجل المهام التلقائية{% endblock %}
+{% block page_subtitle %}مراقبة وتشغيل مهام النظام{% endblock %}
 
 {% block content %}
-<!-- Quick Actions -->
-<div class="content-card mb-4">
-    <div class="card-header"><i class="fas fa-bolt me-2" style="color:var(--primary)"></i> تشغيل المهام</div>
-    <div class="card-body">
+<!-- Task Launch Panel -->
+<div class="c-card mb-4">
+    <div class="c-card-header">
+        <div class="c-card-title"><i class="fas fa-bolt"></i> تشغيل المهام</div>
+    </div>
+    <div class="c-card-body">
         <div class="row g-2">
             {% set tasks = [
-                ('collect-trends', 'جمع الترندات', 'fa-rss', '#e94560'),
-                ('collect-rss', 'جمع RSS', 'fa-newspaper', '#4cc9f0'),
-                ('generate-ideas', 'توليد الأفكار', 'fa-lightbulb', '#f4a261'),
-                ('sync-analytics', 'مزامنة التحليلات', 'fa-sync', '#52b788'),
-                ('run-pipeline', 'خط الإنتاج الكامل', 'fa-stream', '#9b59b6'),
+                ('collect-trends', 'جمع الترندات', 'fa-fire', '#e94560'),
+                ('collect-rss', 'جمع RSS', 'fa-rss', '#58a6ff'),
+                ('generate-ideas', 'توليد الأفكار', 'fa-lightbulb', '#d29922'),
+                ('sync-analytics', 'مزامنة التحليلات', 'fa-chart-line', '#3fb950'),
+                ('run-pipeline', 'خط الإنتاج الكامل', 'fa-stream', '#a371f7'),
             ] %}
             {% for action, label, icon, color in tasks %}
-            <div class="col-md-2 col-sm-4 col-6">
-                <button class="btn btn-sm w-100"
-                        style="background:{{ color }}20;border:1px solid {{ color }}40;color:{{ color }};"
+            <div class="col-6 col-sm-4 col-md-2">
+                <button class="btn btn-sm w-100 d-flex flex-column align-items-center gap-1 py-2"
+                        style="background:{{ color }}12;border:1px solid {{ color }}30;color:{{ color }};min-height:62px;"
                         hx-post="/dashboard/api/{{ action }}"
                         hx-swap="none"
                         onclick="showToast('تم تشغيل: {{ label }}', 'info')">
-                    <i class="fas {{ icon }} d-block mb-1"></i>
-                    <small>{{ label }}</small>
+                    <i class="fas {{ icon }}" style="font-size:1.1rem;"></i>
+                    <small style="font-size:0.72rem;text-align:center;line-height:1.2;">{{ label }}</small>
                 </button>
             </div>
             {% endfor %}
@@ -32,60 +34,67 @@
     </div>
 </div>
 
-<!-- Jobs Table -->
-<div class="content-card">
-    <div class="card-header d-flex justify-content-between">
-        <span><i class="fas fa-list me-2"></i> سجل المهام</span>
-        <button class="btn btn-sm btn-outline-primary"
-                hx-get="/dashboard/jobs"
-                hx-push-url="true"
-                hx-target="body"
-                hx-swap="outerHTML">
+<!-- Jobs Log -->
+<div class="c-card">
+    <div class="c-card-header">
+        <div class="c-card-title"><i class="fas fa-list-alt"></i> سجل المهام</div>
+        <a href="/dashboard/jobs" class="btn btn-sm"
+           style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-muted);font-size:0.78rem;">
             <i class="fas fa-refresh me-1"></i> تحديث
-        </button>
+        </a>
     </div>
-    <div class="card-body p-0">
+    <div class="c-card-body no-pad">
         {% if jobs %}
         <div class="table-responsive">
-            <table class="table mb-0">
+            <table class="data-table">
                 <thead>
                     <tr>
                         <th>نوع المهمة</th>
                         <th>الحالة</th>
                         <th>التقدم</th>
-                        <th>Celery ID</th>
-                        <th>وقت الإنشاء</th>
-                        <th>الخطأ</th>
+                        <th>وقت البدء</th>
+                        <th>وقت الانتهاء</th>
+                        <th>معلومات</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for job in jobs %}
                     <tr>
                         <td>
-                            <span style="font-size:0.85rem;">{{ job.job_type }}</span>
+                            <div style="font-size:0.82rem;font-weight:600;">{{ job.job_type }}</div>
+                            {% if job.celery_task_id %}
+                            <div style="font-size:0.68rem;color:var(--text-muted);font-family:monospace;">{{ job.celery_task_id[:20] }}…</div>
+                            {% endif %}
                         </td>
-                        <td>
-                            <span class="badge-status status-{{ job.status }}">{{ job.status }}</span>
-                        </td>
-                        <td style="min-width:100px;">
-                            <div class="progress">
-                                <div class="progress-bar" style="width:{{ job.progress }}%"></div>
+                        <td><span class="badge-pill {{ job.status }}">{{ job.status }}</span></td>
+                        <td style="min-width:120px;">
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="flex:1;background:rgba(255,255,255,0.06);border-radius:4px;height:5px;">
+                                    <div style="width:{{ job.progress }}%;height:100%;background:{% if job.status == 'completed' %}#3fb950{% elif job.status == 'failed' %}#f85149{% else %}#58a6ff{% endif %};border-radius:4px;transition:width 0.5s;"></div>
+                                </div>
+                                <span style="font-size:0.72rem;color:var(--text-muted);min-width:28px;">{{ job.progress|int }}%</span>
                             </div>
-                            <small style="color:rgba(255,255,255,0.4)">{{ job.progress|int }}%</small>
                         </td>
-                        <td>
-                            <code style="font-size:0.7rem;color:rgba(255,255,255,0.4)">
-                                {{ job.celery_task_id[:20] if job.celery_task_id else '-' }}...
-                            </code>
+                        <td style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;">
+                            {{ job.started_at[:16] if job.started_at else '—' }}
                         </td>
-                        <td style="font-size:0.8rem;color:rgba(255,255,255,0.5)">{{ job.created_at }}</td>
+                        <td style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;">
+                            {{ job.completed_at[:16] if job.completed_at else '—' }}
+                        </td>
                         <td>
                             {% if job.error_message %}
-                            <span title="{{ job.error_message }}" style="color:#e63946;font-size:0.8rem;cursor:help;">
-                                <i class="fas fa-exclamation-circle"></i> خطأ
+                            <button class="btn btn-sm"
+                                    style="background:rgba(248,81,73,0.1);border:1px solid rgba(248,81,73,0.2);color:#f85149;font-size:0.72rem;"
+                                    title="{{ job.error_message }}"
+                                    onclick="showToast('{{ job.error_message[:80]|replace(\"'\", \"\") }}', 'danger')">
+                                <i class="fas fa-exclamation-circle me-1"></i>خطأ
+                            </button>
+                            {% elif job.retry_count and job.retry_count > 0 %}
+                            <span style="font-size:0.75rem;color:#d29922;">
+                                <i class="fas fa-redo me-1"></i>{{ job.retry_count }} إعادة
                             </span>
                             {% else %}
-                            <span style="color:rgba(255,255,255,0.2)">-</span>
+                            <span style="color:rgba(255,255,255,0.15);font-size:0.8rem;">—</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -94,9 +103,9 @@
             </table>
         </div>
         {% else %}
-        <div class="text-center py-5" style="color:rgba(255,255,255,0.3)">
-            <i class="fas fa-cogs fa-3x mb-3 d-block"></i>
-            <p>لا توجد مهام بعد</p>
+        <div class="empty-state">
+            <i class="fas fa-tasks"></i>
+            <p>لا توجد مهام بعد. شغّل إحدى المهام أعلاه للبدء</p>
         </div>
         {% endif %}
     </div>

@@ -1,69 +1,131 @@
 {% extends "dashboard/base.html" %}
-{% block title %}الأفكار - Health is First{% endblock %}
+{% block title %}أفكار المحتوى - Health is First{% endblock %}
 {% block page_title %}أفكار المحتوى{% endblock %}
-{% block page_subtitle %}الأفكار المولّدة بالذكاء الاصطناعي للفيديوهات{% endblock %}
+{% block page_subtitle %}{{ ideas|length }} فكرة مولّدة بالذكاء الاصطناعي{% endblock %}
 
 {% block content %}
-<div class="d-flex gap-2 mb-4">
-    <button class="btn btn-primary"
-            hx-post="/dashboard/api/generate-ideas" hx-swap="none"
-            onclick="showToast('جاري توليد الأفكار...', 'info')">
-        <i class="fas fa-magic me-2"></i>توليد أفكار جديدة
-    </button>
+<!-- Actions -->
+<div class="c-card mb-4">
+    <div class="c-card-body">
+        <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-primary btn-sm"
+                        hx-post="/dashboard/api/generate-ideas" hx-swap="none"
+                        onclick="showToast('جاري توليد أفكار جديدة...', 'info')">
+                    <i class="fas fa-magic me-1"></i> توليد أفكار جديدة
+                </button>
+                <button class="btn btn-sm" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text-muted);"
+                        hx-post="/dashboard/api/collect-trends" hx-swap="none"
+                        onclick="showToast('جاري جمع الترندات...', 'info')">
+                    <i class="fas fa-fire me-1"></i> تحديث الترندات أولاً
+                </button>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <!-- Filter by status -->
+                <select class="form-select form-select-sm" style="width:auto;font-size:0.8rem;" onchange="filterIdeas(this.value)">
+                    <option value="all">كل الحالات</option>
+                    <option value="pending">معلق</option>
+                    <option value="in_progress">جاري</option>
+                    <option value="completed">مكتمل</option>
+                </select>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="row g-3">
+<!-- Ideas Grid -->
+{% if ideas %}
+<div class="row g-3" id="ideasGrid">
     {% for idea in ideas %}
-    <div class="col-md-6 col-lg-4">
-        <div class="content-card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span style="background:rgba(233,69,96,0.15);color:#e94560;padding:3px 10px;border-radius:12px;font-size:0.75rem;">
+    <div class="col-md-6 col-lg-4 idea-item" data-status="{{ idea.status }}">
+        <div class="c-card h-100">
+            <div class="c-card-body" style="padding:1rem;">
+                <!-- Header row -->
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span style="background:rgba(233,69,96,0.12);color:#e94560;padding:2px 10px;border-radius:100px;font-size:0.7rem;font-weight:700;">
                         {{ idea.category or 'عام' }}
                     </span>
-                    <div class="d-flex align-items-center gap-1">
-                        <span style="font-size:0.75rem;color:rgba(255,255,255,0.4)">🔥</span>
-                        <span style="font-size:0.85rem;font-weight:700;color:{% if idea.estimated_virality >= 7 %}#52b788{% elif idea.estimated_virality >= 5 %}#f4a261{% else %}#e63946{% endif %};">
+                    <div style="display:flex;align-items:center;gap:4px;">
+                        <span style="font-size:0.7rem;color:var(--text-muted);">🔥 انتشار</span>
+                        <span style="font-size:0.9rem;font-weight:800;color:{% if idea.estimated_virality >= 7 %}#3fb950{% elif idea.estimated_virality >= 5 %}#d29922{% else %}#f85149{% endif %};">
                             {{ "%.1f"|format(idea.estimated_virality) }}
                         </span>
                     </div>
                 </div>
 
-                <h6 style="font-size:0.9rem;font-weight:700;margin-bottom:8px;line-height:1.4;">{{ idea.title }}</h6>
+                <!-- Title -->
+                <h6 style="font-size:0.88rem;font-weight:700;line-height:1.45;margin-bottom:10px;color:var(--text);">
+                    {{ idea.title }}
+                </h6>
 
+                <!-- Hook -->
                 {% if idea.hook %}
-                <div style="background:#0d1b2a;padding:10px;border-radius:8px;border-right:3px solid #e94560;font-size:0.8rem;margin-bottom:10px;">
-                    🎣 {{ idea.hook[:100] }}...
+                <div style="background:var(--surface-2);padding:8px 12px;border-radius:8px;border-right:3px solid #e94560;font-size:0.78rem;color:var(--text-muted);margin-bottom:10px;line-height:1.5;">
+                    🎣 {{ idea.hook[:110] }}{% if idea.hook|length > 110 %}…{% endif %}
                 </div>
                 {% endif %}
 
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="badge-status status-{{ idea.status }}">{{ idea.status }}</span>
+                <!-- Footer -->
+                <div class="d-flex justify-content-between align-items-center mt-auto">
+                    <span class="badge-pill {{ idea.status }}">{{ idea.status }}</span>
                     {% if idea.safety_check_passed %}
-                    <span style="color:#52b788;font-size:0.75rem;"><i class="fas fa-shield-alt me-1"></i>آمن</span>
+                    <span style="font-size:0.72rem;color:#3fb950;font-weight:600;">
+                        <i class="fas fa-shield-alt me-1"></i>آمن طبياً
+                    </span>
+                    {% else %}
+                    <span style="font-size:0.72rem;color:#d29922;">
+                        <i class="fas fa-exclamation-triangle me-1"></i>يحتاج مراجعة
+                    </span>
                     {% endif %}
                 </div>
 
+                <!-- Action -->
                 {% if idea.status == 'pending' %}
-                <button class="btn btn-sm btn-outline-primary w-100 mt-2"
+                <button class="btn btn-sm btn-primary w-100 mt-2"
                         hx-post="/dashboard/api/ideas/{{ idea.id }}/generate-script"
                         hx-swap="none"
                         onclick="showToast('جاري كتابة السكريبت...', 'info')">
-                    <i class="fas fa-pen me-1"></i> كتابة سكريبت
+                    <i class="fas fa-pen me-1"></i> كتابة سكريبت لهذه الفكرة
                 </button>
+                {% elif idea.status == 'in_progress' %}
+                <div class="d-flex align-items-center gap-2 mt-2" style="font-size:0.78rem;color:#58a6ff;">
+                    <span class="spinner-border spinner-border-sm"></span> جاري الإنتاج...
+                </div>
+                {% elif idea.status == 'completed' %}
+                <div class="mt-2" style="font-size:0.78rem;color:#3fb950;">
+                    <i class="fas fa-check-circle me-1"></i> تم إنشاء السكريبت
+                </div>
                 {% endif %}
-            </div>
-        </div>
-    </div>
-    {% else %}
-    <div class="col-12">
-        <div class="content-card">
-            <div class="card-body text-center py-5" style="color:rgba(255,255,255,0.3)">
-                <i class="fas fa-lightbulb fa-3x mb-3 d-block"></i>
-                <p>لا توجد أفكار بعد. اضغط "توليد أفكار جديدة"</p>
             </div>
         </div>
     </div>
     {% endfor %}
 </div>
+{% else %}
+<div class="c-card">
+    <div class="empty-state">
+        <i class="fas fa-lightbulb"></i>
+        <p>لا توجد أفكار بعد</p>
+        <button class="btn btn-primary btn-sm"
+                hx-post="/dashboard/api/generate-ideas" hx-swap="none"
+                onclick="showToast('جاري توليد الأفكار...', 'info')">
+            <i class="fas fa-magic me-1"></i> توليد أفكار جديدة
+        </button>
+    </div>
+</div>
+{% endif %}
+
+{% block extra_js %}
+<script>
+function filterIdeas(status) {
+    document.querySelectorAll('.idea-item').forEach(el => {
+        if (status === 'all' || el.dataset.status === status) {
+            el.style.display = '';
+        } else {
+            el.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}
 {% endblock %}

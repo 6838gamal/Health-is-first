@@ -4,44 +4,47 @@
 {% block page_subtitle %}جميع الفيديوهات في النظام{% endblock %}
 
 {% block content %}
-<!-- Stats Bar -->
-<div class="row g-3 mb-4">
-    {% set status_data = [
-        ('pending', 'معلق', '#f4a261'),
-        ('review', 'مراجعة', '#4cc9f0'),
-        ('approved', 'مُوافق', '#52b788'),
-        ('published', 'منشور', '#52b788'),
-        ('failed', 'فشل', '#e63946'),
-    ] %}
+{% set status_data = [
+    ('pending', 'معلق', '#d29922'),
+    ('review', 'مراجعة', '#58a6ff'),
+    ('approved', 'مُوافق', '#3fb950'),
+    ('published', 'منشور', '#3fb950'),
+    ('failed', 'فشل', '#f85149'),
+] %}
+
+<!-- Stats Chips -->
+<div class="d-flex flex-wrap gap-2 mb-4">
+    <a href="/dashboard/videos" class="btn btn-sm {% if not current_status %}btn-primary{% endif %}"
+       style="{% if current_status %}background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-muted);{% endif %}">
+        الكل <span style="margin-right:4px;opacity:0.6;">{{ counts.values()|sum }}</span>
+    </a>
     {% for s, label, color in status_data %}
-    <div class="col">
-        <div class="stat-card text-center" style="cursor:pointer" onclick="window.location='/dashboard/review?status={{ s }}'">
-            <div class="stat-value" style="color:{{ color }};font-size:1.5rem;">{{ counts.get(s, 0) }}</div>
-            <div class="stat-label">{{ label }}</div>
-        </div>
-    </div>
+    <a href="/dashboard/videos?status={{ s }}"
+       class="btn btn-sm"
+       style="background:{{ color }}{% if current_status == s %}25{% else %}12{% endif %};border:1px solid {{ color }}{% if current_status == s %}50{% else %}25{% endif %};color:{{ color }};">
+        {{ label }}
+        <span style="margin-right:6px;background:rgba(0,0,0,0.25);padding:1px 6px;border-radius:10px;font-size:0.72rem;">{{ counts.get(s, 0) }}</span>
+    </a>
     {% endfor %}
 </div>
 
 <!-- Videos Table -->
-<div class="content-card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="fas fa-video me-2" style="color:var(--primary)"></i> قائمة الفيديوهات</span>
+<div class="c-card">
+    <div class="c-card-header">
+        <div class="c-card-title"><i class="fas fa-film"></i> قائمة الفيديوهات</div>
         <div class="d-flex gap-2">
-            <select class="form-select form-select-sm"
-                    style="background:#0d1b2a;border:1px solid rgba(255,255,255,0.1);color:#fff;width:auto;"
-                    onchange="window.location='/dashboard/videos?status='+this.value">
-                <option value="">كل الحالات</option>
-                {% for s, label, color in status_data %}
-                <option value="{{ s }}" {% if current_status == s %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
+            <a href="/dashboard/review?status=review" class="btn btn-sm btn-primary">
+                <i class="fas fa-check-circle me-1"></i> المراجعة المعلقة
+                {% if counts.get('review', 0) > 0 %}
+                <span class="badge bg-light text-dark ms-1">{{ counts.get('review', 0) }}</span>
+                {% endif %}
+            </a>
         </div>
     </div>
-    <div class="card-body p-0">
+    <div class="c-card-body no-pad">
         {% if videos %}
         <div class="table-responsive">
-            <table class="table mb-0">
+            <table class="data-table">
                 <thead>
                     <tr>
                         <th>العنوان</th>
@@ -50,49 +53,72 @@
                         <th>الحجم</th>
                         <th>يوتيوب</th>
                         <th>التاريخ</th>
-                        <th>الإجراء</th>
+                        <th>الإجراءات</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for video in videos %}
+                    {% for v in videos %}
                     <tr>
-                        <td>
-                            <div style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.85rem;">
-                                {{ video.title }}
+                        <td style="max-width:260px;">
+                            <div style="font-size:0.85rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ v.title }}">
+                                {{ v.title }}
                             </div>
                         </td>
-                        <td><span class="badge-status status-{{ video.status }}">{{ video.status }}</span></td>
-                        <td style="font-size:0.85rem;">{{ video.duration|int if video.duration else '-' }}s</td>
-                        <td style="font-size:0.85rem;color:rgba(255,255,255,0.5);">
-                            {{ "%.1f"|format(video.file_size / 1024 / 1024) if video.file_size else '-' }}MB
+                        <td><span class="badge-pill {{ v.status }}">{{ v.status }}</span></td>
+                        <td style="font-size:0.82rem;color:var(--text-muted);">{{ v.duration|int if v.duration else '—' }}s</td>
+                        <td style="font-size:0.82rem;color:var(--text-muted);">
+                            {{ "%.1f"|format(v.file_size / 1024 / 1024) if v.file_size else '—' }}
+                            {% if v.file_size %}MB{% endif %}
                         </td>
                         <td>
-                            {% if video.youtube_url %}
-                            <a href="{{ video.youtube_url }}" target="_blank" style="color:#ff4444;">
+                            {% if v.youtube_url %}
+                            <a href="{{ v.youtube_url }}" target="_blank" style="color:#ff4444;font-size:1.1rem;">
                                 <i class="fab fa-youtube"></i>
                             </a>
                             {% else %}
-                            <span style="color:rgba(255,255,255,0.2)">-</span>
+                            <span style="color:rgba(255,255,255,0.15);">—</span>
                             {% endif %}
                         </td>
-                        <td style="font-size:0.8rem;color:rgba(255,255,255,0.5);">
-                            {{ video.created_at.strftime('%m/%d %H:%M') if video.created_at else '-' }}
+                        <td style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;">
+                            {{ v.created_at.strftime('%m/%d %H:%M') if v.created_at else '—' }}
                         </td>
                         <td>
-                            {% if video.status == 'review' %}
-                            <a href="/dashboard/review/{{ video.id }}" class="btn btn-sm btn-primary">مراجعة</a>
-                            {% elif video.status == 'failed' %}
-                            <button class="btn btn-sm btn-warning"
-                                    hx-post="/dashboard/api/videos/{{ video.id }}/regenerate"
-                                    hx-swap="none"
-                                    onclick="showToast('جاري إعادة الإنتاج...', 'warning')">
-                                <i class="fas fa-redo"></i>
-                            </button>
-                            {% else %}
-                            <a href="/dashboard/review/{{ video.id }}" class="btn btn-sm btn-outline-secondary btn-sm">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            {% endif %}
+                            <div class="d-flex gap-1">
+                                <a href="/dashboard/review/{{ v.id }}"
+                                   class="btn btn-sm {% if v.status == 'review' %}btn-primary{% endif %}"
+                                   style="{% if v.status != 'review' %}background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-muted);{% endif %}font-size:0.75rem;"
+                                   title="{% if v.status == 'review' %}مراجعة{% else %}عرض{% endif %}">
+                                    <i class="fas fa-{% if v.status == 'review' %}check-circle{% else %}eye{% endif %}"></i>
+                                </a>
+                                {% if v.status == 'failed' %}
+                                <button class="btn btn-sm"
+                                        style="background:rgba(210,153,34,0.1);border:1px solid rgba(210,153,34,0.25);color:#d29922;font-size:0.75rem;"
+                                        hx-post="/dashboard/api/videos/{{ v.id }}/regenerate"
+                                        hx-swap="none"
+                                        onclick="showToast('جاري إعادة الإنتاج...', 'warning')"
+                                        title="إعادة الإنتاج">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                                {% endif %}
+                                {% if v.status == 'review' %}
+                                <button class="btn btn-sm"
+                                        style="background:rgba(63,185,80,0.1);border:1px solid rgba(63,185,80,0.25);color:#3fb950;font-size:0.75rem;"
+                                        hx-post="/dashboard/api/videos/{{ v.id }}/approve"
+                                        hx-swap="none"
+                                        onclick="showToast('تمت الموافقة! جاري الرفع...', 'success')"
+                                        title="موافقة ونشر فوري">
+                                    <i class="fab fa-youtube"></i>
+                                </button>
+                                <button class="btn btn-sm"
+                                        style="background:rgba(248,81,73,0.1);border:1px solid rgba(248,81,73,0.25);color:#f85149;font-size:0.75rem;"
+                                        hx-post="/dashboard/api/videos/{{ v.id }}/reject"
+                                        hx-swap="outerHTML" hx-target="closest tr"
+                                        onclick="showToast('تم رفض الفيديو', 'danger')"
+                                        title="رفض">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -100,9 +126,9 @@
             </table>
         </div>
         {% else %}
-        <div class="text-center py-5" style="color:rgba(255,255,255,0.3)">
-            <i class="fas fa-video fa-3x mb-3 d-block"></i>
-            <p>لا توجد فيديوهات</p>
+        <div class="empty-state">
+            <i class="fas fa-film"></i>
+            <p>لا توجد فيديوهات{% if current_status %} بحالة "{{ current_status }}"{% endif %}</p>
         </div>
         {% endif %}
     </div>

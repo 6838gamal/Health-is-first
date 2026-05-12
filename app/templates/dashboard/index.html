@@ -1,87 +1,80 @@
 {% extends "dashboard/base.html" %}
 {% block title %}لوحة التحكم - Health is First{% endblock %}
 {% block page_title %}لوحة التحكم{% endblock %}
-{% block page_subtitle %}نظرة عامة على النظام - {{ current_date }}{% endblock %}
+{% block page_subtitle %}نظرة شاملة على النظام — {{ current_date }}{% endblock %}
 
 {% block content %}
-<!-- Stats Row -->
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(233,69,96,0.15);">
-                <i class="fas fa-fire" style="color: #e94560;"></i>
+
+<!-- ── Stats Row 1 ── -->
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="--accent-color:#e94560">
+            <div class="stat-icon" style="background:rgba(233,69,96,0.12);color:#e94560">
+                <i class="fas fa-fire"></i>
             </div>
             <div class="stat-value">{{ stats.trends_pending }}</div>
             <div class="stat-label">ترند بانتظار المعالجة</div>
-            <div class="progress mt-2"><div class="progress-bar" style="width: 65%"></div></div>
+            <div class="stat-progress"><div class="stat-progress-bar" style="width:65%"></div></div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(76,201,240,0.15);">
-                <i class="fas fa-file-alt" style="color: #4cc9f0;"></i>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="--accent-color:#58a6ff">
+            <div class="stat-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff">
+                <i class="fas fa-scroll"></i>
             </div>
             <div class="stat-value">{{ stats.scripts_ready }}</div>
             <div class="stat-label">سكريبت جاهز للإنتاج</div>
-            <div class="progress mt-2"><div class="progress-bar" style="background:#4cc9f0;width: 45%"></div></div>
+            <div class="stat-progress"><div class="stat-progress-bar" style="background:#58a6ff;width:45%"></div></div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(244,162,97,0.15);">
-                <i class="fas fa-clock" style="color: #f4a261;"></i>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="--accent-color:#d29922">
+            <div class="stat-icon" style="background:rgba(210,153,34,0.12);color:#d29922">
+                <i class="fas fa-clock"></i>
             </div>
             <div class="stat-value">{{ stats.videos_review }}</div>
             <div class="stat-label">فيديو بانتظار المراجعة</div>
-            <div class="progress mt-2"><div class="progress-bar" style="background:#f4a261;width: 80%"></div></div>
+            <div class="stat-progress"><div class="stat-progress-bar" style="background:#d29922;width:80%"></div></div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(82,183,136,0.15);">
-                <i class="fas fa-youtube" style="color: #52b788;"></i>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="--accent-color:#3fb950">
+            <div class="stat-icon" style="background:rgba(63,185,80,0.12);color:#3fb950">
+                <i class="fab fa-youtube"></i>
             </div>
             <div class="stat-value">{{ stats.videos_published }}</div>
-            <div class="stat-label">فيديو منشور</div>
-            <div class="progress mt-2"><div class="progress-bar" style="background:#52b788;width: 100%"></div></div>
+            <div class="stat-label">فيديو منشور على يوتيوب</div>
+            <div class="stat-progress"><div class="stat-progress-bar" style="background:#3fb950;width:100%"></div></div>
         </div>
     </div>
 </div>
 
-<!-- Second Stats Row -->
+<!-- ── Stats Row 2 ── -->
 <div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(82,183,136,0.15);">
-                <i class="fas fa-eye" style="color: #52b788;"></i>
-            </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="--accent-color:#3fb950">
+            <div class="stat-icon" style="background:rgba(63,185,80,0.12);color:#3fb950"><i class="fas fa-eye"></i></div>
             <div class="stat-value">{{ "{:,}".format(stats.total_views) }}</div>
             <div class="stat-label">إجمالي المشاهدات</div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(233,69,96,0.15);">
-                <i class="fas fa-thumbs-up" style="color: #e94560;"></i>
-            </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="--accent-color:#e94560">
+            <div class="stat-icon" style="background:rgba(233,69,96,0.12);color:#e94560"><i class="fas fa-thumbs-up"></i></div>
             <div class="stat-value">{{ "{:,}".format(stats.total_likes) }}</div>
             <div class="stat-label">إجمالي الإعجابات</div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(76,201,240,0.15);">
-                <i class="fas fa-lightbulb" style="color: #4cc9f0;"></i>
-            </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="--accent-color:#58a6ff">
+            <div class="stat-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff"><i class="fas fa-lightbulb"></i></div>
             <div class="stat-value">{{ stats.ideas_generated }}</div>
             <div class="stat-label">فكرة محتوى مولّدة</div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(244,162,97,0.15);">
-                <i class="fas fa-cogs" style="color: #f4a261;"></i>
-            </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="--accent-color:#d29922">
+            <div class="stat-icon" style="background:rgba(210,153,34,0.12);color:#d29922"><i class="fas fa-cogs"></i></div>
             <div class="stat-value">{{ stats.jobs_running }}</div>
             <div class="stat-label">مهمة تعمل الآن</div>
         </div>
@@ -89,88 +82,138 @@
 </div>
 
 <div class="row g-3">
-    <!-- Pipeline Status -->
-    <div class="col-md-5">
-        <div class="content-card h-100">
-            <div class="card-header d-flex align-items-center justify-content-between">
-                <span><i class="fas fa-stream me-2" style="color:var(--primary)"></i> خط الإنتاج</span>
+    <!-- Pipeline -->
+    <div class="col-md-4">
+        <div class="c-card h-100">
+            <div class="c-card-header">
+                <div class="c-card-title"><i class="fas fa-stream"></i> خط الإنتاج</div>
                 <button class="btn btn-sm btn-primary"
-                        hx-post="/dashboard/api/run-pipeline"
-                        hx-swap="none"
+                        hx-post="/dashboard/api/run-pipeline" hx-swap="none"
                         onclick="showToast('تم تشغيل خط الإنتاج الكامل!', 'success')">
                     <i class="fas fa-play me-1"></i> تشغيل
                 </button>
             </div>
-            <div class="card-body">
+            <div class="c-card-body">
                 {% set steps = [
-                    ('جمع الترندات', 'fa-rss', '#e94560', 'collect_trends'),
-                    ('تحليل AI', 'fa-brain', '#4cc9f0', 'ai_analysis'),
-                    ('توليد الأفكار', 'fa-lightbulb', '#f4a261', 'generate_ideas'),
-                    ('كتابة السكريبت', 'fa-file-alt', '#52b788', 'generate_script'),
-                    ('إنشاء الصوت', 'fa-microphone', '#9b59b6', 'generate_audio'),
-                    ('تصيير الفيديو', 'fa-video', '#e94560', 'render_video'),
-                    ('إنشاء الـ Thumbnail', 'fa-image', '#4cc9f0', 'generate_thumbnail'),
-                    ('المراجعة والنشر', 'fa-youtube', '#ff0000', 'publish'),
+                    ('جمع الترندات', 'fa-rss', '#e94560'),
+                    ('تحليل الذكاء الاصطناعي', 'fa-brain', '#58a6ff'),
+                    ('توليد الأفكار', 'fa-lightbulb', '#d29922'),
+                    ('كتابة السكريبت', 'fa-scroll', '#3fb950'),
+                    ('تحويل النص لصوت', 'fa-microphone', '#a371f7'),
+                    ('تصيير الفيديو', 'fa-film', '#e94560'),
+                    ('إنشاء الـ Thumbnail', 'fa-image', '#58a6ff'),
+                    ('المراجعة والنشر', 'fab fa-youtube', '#ff4444'),
                 ] %}
-                {% for name, icon, color, key in steps %}
+                {% for name, icon, color in steps %}
                 <div class="pipeline-step">
-                    <div class="step-icon" style="background: {{ color }}20; color: {{ color }}">
-                        <i class="fas {{ icon }}"></i>
+                    <div class="ps-icon" style="background:{{ color }}20;color:{{ color }}">
+                        <i class="{{ icon }}"></i>
                     </div>
                     <div class="flex-grow-1">
-                        <div style="font-size:0.85rem;font-weight:600;">{{ name }}</div>
+                        <div class="ps-label">{{ name }}</div>
                     </div>
-                    <div>
-                        <span class="badge-status status-approved">✓ نشط</span>
-                    </div>
+                    <span class="badge-pill approved">✓ نشط</span>
                 </div>
                 {% endfor %}
             </div>
         </div>
     </div>
 
-    <!-- Recent Videos -->
-    <div class="col-md-7">
-        <div class="content-card">
-            <div class="card-header d-flex align-items-center justify-content-between">
-                <span><i class="fas fa-video me-2" style="color:var(--primary)"></i> أحدث الفيديوهات</span>
-                <a href="/dashboard/review" class="btn btn-sm btn-outline-primary">مراجعة الكل</a>
+    <!-- Right Column -->
+    <div class="col-md-8 d-flex flex-column gap-3">
+        <!-- Quick Actions -->
+        <div class="c-card">
+            <div class="c-card-header">
+                <div class="c-card-title"><i class="fas fa-bolt"></i> إجراءات سريعة</div>
             </div>
-            <div class="card-body p-0">
+            <div class="c-card-body">
+                <div class="row g-2">
+                    <div class="col-6 col-sm-3">
+                        <button class="btn btn-sm w-100 d-flex flex-column align-items-center gap-1 py-2"
+                                style="background:rgba(233,69,96,0.1);border:1px solid rgba(233,69,96,0.25);color:#e94560;"
+                                hx-post="/dashboard/api/collect-trends" hx-swap="none"
+                                onclick="showToast('جاري جمع الترندات...', 'info')">
+                            <i class="fas fa-fire"></i>
+                            <small>جمع الترندات</small>
+                        </button>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <button class="btn btn-sm w-100 d-flex flex-column align-items-center gap-1 py-2"
+                                style="background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);color:#58a6ff;"
+                                hx-post="/dashboard/api/collect-rss" hx-swap="none"
+                                onclick="showToast('جاري جمع RSS...', 'info')">
+                            <i class="fas fa-rss"></i>
+                            <small>جمع RSS</small>
+                        </button>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <button class="btn btn-sm w-100 d-flex flex-column align-items-center gap-1 py-2"
+                                style="background:rgba(210,153,34,0.1);border:1px solid rgba(210,153,34,0.25);color:#d29922;"
+                                hx-post="/dashboard/api/generate-ideas" hx-swap="none"
+                                onclick="showToast('جاري توليد الأفكار...', 'info')">
+                            <i class="fas fa-lightbulb"></i>
+                            <small>توليد الأفكار</small>
+                        </button>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <a href="/dashboard/review" class="btn btn-sm btn-primary w-100 d-flex flex-column align-items-center gap-1 py-2">
+                            <i class="fas fa-check-circle"></i>
+                            <small>مراجعة
+                                {% if stats.videos_review > 0 %}
+                                <span class="badge bg-light text-dark ms-1">{{ stats.videos_review }}</span>
+                                {% endif %}
+                            </small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Videos -->
+        <div class="c-card flex-grow-1">
+            <div class="c-card-header">
+                <div class="c-card-title"><i class="fas fa-film"></i> أحدث الفيديوهات</div>
+                <a href="/dashboard/review" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+            </div>
+            <div class="c-card-body no-pad">
                 {% if recent_videos %}
                 <div class="table-responsive">
-                    <table class="table mb-0">
+                    <table class="data-table">
                         <thead>
                             <tr>
                                 <th>العنوان</th>
                                 <th>الحالة</th>
                                 <th>المدة</th>
-                                <th>الإجراء</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for video in recent_videos %}
+                            {% for v in recent_videos %}
                             <tr>
                                 <td>
-                                    <div style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ video.title }}">
-                                        {{ video.title }}
+                                    <div style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ v.title }}">
+                                        {{ v.title }}
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge-status status-{{ video.status }}">
-                                        {{ video.status }}
+                                    <span class="badge-pill {{ v.status }}">
+                                        {{ v.status }}
                                     </span>
                                 </td>
-                                <td>{{ video.duration|int if video.duration else '-' }}s</td>
+                                <td style="color:var(--text-muted)">
+                                    {{ v.duration|int if v.duration else '—' }}s
+                                </td>
                                 <td>
-                                    {% if video.status == 'review' %}
-                                    <a href="/dashboard/review/{{ video.id }}" class="btn btn-sm btn-primary">مراجعة</a>
-                                    {% elif video.status == 'published' %}
-                                    <a href="{{ video.youtube_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    {% if v.status == 'review' %}
+                                    <a href="/dashboard/review/{{ v.id }}" class="btn btn-sm btn-primary">مراجعة</a>
+                                    {% elif v.status == 'published' and v.youtube_url %}
+                                    <a href="{{ v.youtube_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                         <i class="fab fa-youtube"></i>
                                     </a>
                                     {% else %}
-                                    <span class="text-muted" style="font-size:0.8rem;">{{ video.status }}</span>
+                                    <a href="/dashboard/review/{{ v.id }}" class="btn btn-sm" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-muted);">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -179,56 +222,16 @@
                     </table>
                 </div>
                 {% else %}
-                <div class="text-center py-5" style="color:rgba(255,255,255,0.3)">
-                    <i class="fas fa-video fa-3x mb-3 d-block"></i>
+                <div class="empty-state">
+                    <i class="fas fa-film"></i>
                     <p>لا توجد فيديوهات بعد</p>
                     <button class="btn btn-primary btn-sm"
                             hx-post="/dashboard/api/run-pipeline" hx-swap="none"
                             onclick="showToast('تم تشغيل خط الإنتاج!', 'success')">
-                        <i class="fas fa-magic me-1"></i> ابدأ الإنتاج
+                        <i class="fas fa-magic me-1"></i> ابدأ الإنتاج التلقائي
                     </button>
                 </div>
                 {% endif %}
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="content-card mt-3">
-            <div class="card-header">
-                <i class="fas fa-bolt me-2" style="color:var(--primary)"></i> إجراءات سريعة
-            </div>
-            <div class="card-body">
-                <div class="row g-2">
-                    <div class="col-6">
-                        <button class="btn btn-outline-primary w-100 btn-sm"
-                                hx-post="/dashboard/api/collect-trends" hx-swap="none"
-                                onclick="showToast('جمع الترندات بدأ...', 'info')">
-                            <i class="fas fa-rss me-1"></i> جمع الترندات
-                        </button>
-                    </div>
-                    <div class="col-6">
-                        <button class="btn btn-outline-primary w-100 btn-sm"
-                                hx-post="/dashboard/api/generate-ideas" hx-swap="none"
-                                onclick="showToast('توليد الأفكار بدأ...', 'info')">
-                            <i class="fas fa-lightbulb me-1"></i> توليد الأفكار
-                        </button>
-                    </div>
-                    <div class="col-6">
-                        <button class="btn btn-outline-primary w-100 btn-sm"
-                                hx-post="/dashboard/api/sync-analytics" hx-swap="none"
-                                onclick="showToast('مزامنة التحليلات...', 'info')">
-                            <i class="fas fa-sync me-1"></i> مزامنة التحليلات
-                        </button>
-                    </div>
-                    <div class="col-6">
-                        <a href="/dashboard/review" class="btn btn-primary w-100 btn-sm">
-                            <i class="fas fa-check-circle me-1"></i> مراجعة الفيديوهات
-                            {% if stats.videos_review > 0 %}
-                            <span class="badge bg-light text-dark ms-1">{{ stats.videos_review }}</span>
-                            {% endif %}
-                        </a>
-                    </div>
-                </div>
             </div>
         </div>
     </div>

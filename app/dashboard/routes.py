@@ -473,6 +473,23 @@ async def api_approve_video(video_id: str, db: AsyncSession = Depends(get_db)):
     return JSONResponse({"status": "ok"})
 
 
+@dashboard_router.post("/api/videos/{video_id}/update-meta")
+async def api_update_video_meta(video_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+    form = await request.form()
+    title = form.get("title", "").strip()
+    description = form.get("description", "").strip()
+    result = await db.execute(select(Video).where(Video.id == video_id))
+    video = result.scalar_one_or_none()
+    if not video:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    if title:
+        video.title = title
+    if description is not None:
+        video.description = description
+    await db.commit()
+    return JSONResponse({"status": "ok"}, headers={"X-Toast-Message": "تم حفظ التعديلات بنجاح"})
+
+
 @dashboard_router.post("/api/videos/{video_id}/reject")
 async def api_reject_video(video_id: str, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Video).where(Video.id == video_id))

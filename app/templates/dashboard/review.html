@@ -1,105 +1,136 @@
 {% extends "dashboard/base.html" %}
 {% block title %}مراجعة الفيديوهات - Health is First{% endblock %}
 {% block page_title %}مراجعة الفيديوهات{% endblock %}
-{% block page_subtitle %}الفيديوهات المعلقة للمراجعة والموافقة قبل النشر{% endblock %}
+{% block page_subtitle %}مراجعة الفيديوهات والموافقة عليها قبل النشر{% endblock %}
 
 {% block content %}
 <!-- Filter Tabs -->
-<div class="content-card mb-4">
-    <div class="card-body py-2">
-        <div class="d-flex gap-2 flex-wrap">
-            {% set statuses = [('all', 'الكل', ''), ('review', 'بانتظار المراجعة', 'warning'), ('approved', 'مُوافق عليه', 'success'), ('scheduled', 'مجدول', 'info'), ('published', 'منشور', 'success'), ('rejected', 'مرفوض', 'danger'), ('failed', 'فشل', 'danger')] %}
-            {% for val, label, color in statuses %}
-            <a href="/dashboard/review?status={{ val }}"
-               class="btn btn-sm {% if current_status == val %}btn-primary{% else %}btn-outline-secondary{% endif %}">
-                {{ label }}
-                {% if val != 'all' %}
-                <span class="badge bg-secondary ms-1">{{ counts.get(val, 0) }}</span>
-                {% endif %}
-            </a>
-            {% endfor %}
-        </div>
-    </div>
+<div class="d-flex flex-wrap gap-2 mb-4">
+    {% set statuses = [
+        ('all', 'الكل', ''),
+        ('review', 'بانتظار المراجعة', '#58a6ff'),
+        ('approved', 'مُوافق', '#3fb950'),
+        ('scheduled', 'مجدول', '#d29922'),
+        ('published', 'منشور', '#3fb950'),
+        ('rejected', 'مرفوض', '#f85149'),
+        ('failed', 'فشل', '#f85149'),
+    ] %}
+    {% for val, label, color in statuses %}
+    <a href="/dashboard/review?status={{ val }}"
+       class="btn btn-sm"
+       style="{% if current_status == val %}background:var(--primary);border-color:var(--primary);color:#fff;{% elif color %}background:{{ color }}12;border:1px solid {{ color }}30;color:{{ color }};{% else %}background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text-muted);{% endif %}">
+        {{ label }}
+        {% if val != 'all' and counts.get(val, 0) > 0 %}
+        <span style="margin-right:4px;background:rgba(0,0,0,0.25);padding:1px 6px;border-radius:10px;font-size:0.7rem;">{{ counts.get(val, 0) }}</span>
+        {% endif %}
+    </a>
+    {% endfor %}
 </div>
 
 {% if videos %}
 <div class="row g-3">
     {% for video in videos %}
-    <div class="col-md-6 col-lg-4">
-        <div class="content-card">
-            <!-- Video Preview Area -->
-            <div style="background: #0d1b2a; height: 200px; border-radius: 12px 12px 0 0; display:flex;align-items:center;justify-content:center; position:relative;">
+    <div class="col-sm-6 col-lg-4">
+        <div class="c-card h-100 d-flex flex-column">
+            <!-- Thumbnail -->
+            <div style="position:relative;height:190px;background:var(--surface-2);border-radius:14px 14px 0 0;overflow:hidden;">
                 {% if video.thumbnail_path %}
                 <img src="/media/thumbnails/{{ video.thumbnail_path.split('/')[-1] }}"
-                     style="width:100%;height:100%;object-fit:cover;border-radius:12px 12px 0 0;" alt="Thumbnail">
+                     style="width:100%;height:100%;object-fit:cover;" alt="Thumbnail"
+                     loading="lazy">
                 {% else %}
-                <div class="text-center">
-                    <i class="fas fa-video fa-3x" style="color:rgba(255,255,255,0.2);"></i>
-                    <div style="color:rgba(255,255,255,0.3);font-size:0.8rem;margin-top:8px;">لا يوجد thumbnail</div>
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;">
+                    <i class="fas fa-film" style="font-size:2rem;color:rgba(255,255,255,0.12);"></i>
+                    <span style="font-size:0.72rem;color:rgba(255,255,255,0.2);">لا يوجد thumbnail</span>
                 </div>
                 {% endif %}
+                <!-- Status badge -->
                 <div style="position:absolute;top:10px;right:10px;">
-                    <span class="badge-status status-{{ video.status }}">{{ video.status }}</span>
+                    <span class="badge-pill {{ video.status }}">{{ video.status }}</span>
                 </div>
+                <!-- Duration -->
                 {% if video.duration %}
-                <div style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.7);padding:3px 8px;border-radius:6px;font-size:0.75rem;">
+                <div style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.75);padding:3px 9px;border-radius:6px;font-size:0.72rem;font-weight:600;">
                     {{ video.duration|int }}s
+                </div>
+                {% endif %}
+                <!-- Play overlay if has file -->
+                {% if video.file_path %}
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;" class="play-overlay"
+                     onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
+                    <div style="width:50px;height:50px;background:rgba(0,0,0,0.7);border-radius:50%;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+                        <i class="fas fa-play" style="color:#fff;margin-right:-2px;"></i>
+                    </div>
                 </div>
                 {% endif %}
             </div>
 
-            <div class="card-body">
-                <h6 class="fw-bold mb-2" style="line-height:1.4;">{{ video.title }}</h6>
+            <!-- Card Body -->
+            <div class="c-card-body d-flex flex-column gap-2" style="flex:1;padding:1rem;">
+                <h6 style="font-size:0.88rem;font-weight:700;line-height:1.4;margin:0;color:var(--text);">
+                    {{ video.title }}
+                </h6>
                 {% if video.description %}
-                <p style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-bottom:1rem;max-height:60px;overflow:hidden;">
-                    {{ video.description[:120] }}...
+                <p style="font-size:0.76rem;color:var(--text-muted);line-height:1.5;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                    {{ video.description }}
                 </p>
                 {% endif %}
 
-                <div class="d-flex gap-1 flex-wrap mb-3">
-                    <span style="font-size:0.7rem;background:rgba(255,255,255,0.05);padding:3px 8px;border-radius:12px;">
-                        <i class="fas fa-calendar" style="color:var(--primary)"></i>
-                        {{ video.created_at.strftime('%Y-%m-%d') if video.created_at else '' }}
+                <div class="d-flex flex-wrap gap-1 mt-auto">
+                    {% if video.created_at %}
+                    <span style="font-size:0.7rem;background:rgba(255,255,255,0.05);padding:3px 8px;border-radius:100px;color:var(--text-muted);">
+                        <i class="fas fa-calendar" style="color:var(--primary);margin-left:3px;font-size:0.6rem;"></i>
+                        {{ video.created_at.strftime('%Y-%m-%d') }}
                     </span>
+                    {% endif %}
                     {% if video.youtube_url %}
                     <a href="{{ video.youtube_url }}" target="_blank"
-                       style="font-size:0.7rem;background:rgba(255,0,0,0.15);color:#ff4444;padding:3px 8px;border-radius:12px;text-decoration:none;">
-                        <i class="fab fa-youtube"></i> يوتيوب
+                       style="font-size:0.7rem;background:rgba(255,0,0,0.1);color:#ff4444;padding:3px 8px;border-radius:100px;text-decoration:none;border:1px solid rgba(255,0,0,0.2);">
+                        <i class="fab fa-youtube me-1"></i>يوتيوب
                     </a>
                     {% endif %}
                 </div>
 
-                <!-- Action Buttons -->
+                <!-- Actions -->
                 {% if video.status == 'review' %}
-                <div class="row g-2">
-                    <div class="col-6">
-                        <a href="/dashboard/review/{{ video.id }}" class="btn btn-primary btn-sm w-100">
-                            <i class="fas fa-eye me-1"></i> مراجعة
-                        </a>
-                    </div>
-                    <div class="col-6">
-                        <button class="btn btn-outline-danger btn-sm w-100"
-                                hx-post="/dashboard/api/videos/{{ video.id }}/reject"
-                                hx-swap="outerHTML"
-                                hx-target="closest .col-md-6"
-                                onclick="showToast('تم رفض الفيديو', 'danger')">
-                            <i class="fas fa-times me-1"></i> رفض
-                        </button>
-                    </div>
+                <div class="d-flex gap-2 mt-1">
+                    <a href="/dashboard/review/{{ video.id }}" class="btn btn-primary btn-sm flex-grow-1">
+                        <i class="fas fa-check-circle me-1"></i> مراجعة
+                    </a>
+                    <button class="btn btn-sm"
+                            style="background:rgba(63,185,80,0.1);border:1px solid rgba(63,185,80,0.25);color:#3fb950;"
+                            hx-post="/dashboard/api/videos/{{ video.id }}/approve"
+                            hx-swap="none"
+                            onclick="showToast('تمت الموافقة! جاري الرفع...', 'success')"
+                            title="موافقة سريعة ونشر">
+                        <i class="fab fa-youtube"></i>
+                    </button>
+                    <button class="btn btn-sm"
+                            style="background:rgba(248,81,73,0.1);border:1px solid rgba(248,81,73,0.25);color:#f85149;"
+                            hx-post="/dashboard/api/videos/{{ video.id }}/reject"
+                            hx-swap="outerHTML" hx-target="closest .col-sm-6"
+                            onclick="showToast('تم رفض الفيديو', 'danger')"
+                            title="رفض">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
                 {% elif video.status == 'published' %}
-                <div class="alert alert-success py-2 mb-0" style="font-size:0.8rem;">
+                <div style="background:rgba(63,185,80,0.08);border:1px solid rgba(63,185,80,0.2);border-radius:8px;padding:8px 12px;font-size:0.78rem;color:#3fb950;text-align:center;">
                     <i class="fas fa-check-circle me-1"></i> منشور على يوتيوب
                 </div>
                 {% elif video.status == 'failed' %}
-                <div class="d-flex gap-2">
-                    <button class="btn btn-warning btn-sm flex-grow-1"
-                            hx-post="/dashboard/api/videos/{{ video.id }}/regenerate"
-                            hx-swap="none"
-                            onclick="showToast('جاري إعادة الإنتاج...', 'warning')">
-                        <i class="fas fa-redo me-1"></i> إعادة الإنتاج
-                    </button>
-                </div>
+                <button class="btn btn-sm w-100"
+                        style="background:rgba(210,153,34,0.1);border:1px solid rgba(210,153,34,0.25);color:#d29922;"
+                        hx-post="/dashboard/api/videos/{{ video.id }}/regenerate"
+                        hx-swap="none"
+                        onclick="showToast('جاري إعادة الإنتاج...', 'warning')">
+                    <i class="fas fa-redo me-1"></i> إعادة الإنتاج
+                </button>
+                {% elif video.status in ['approved', 'scheduled'] %}
+                <a href="/dashboard/review/{{ video.id }}" class="btn btn-sm w-100"
+                   style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-muted);">
+                    <i class="fas fa-eye me-1"></i> عرض التفاصيل
+                </a>
                 {% endif %}
             </div>
         </div>
@@ -109,32 +140,26 @@
 
 <!-- Pagination -->
 {% if total_pages > 1 %}
-<div class="d-flex justify-content-center mt-4">
-    <nav>
-        <ul class="pagination">
-            {% for p in range(1, total_pages + 1) %}
-            <li class="page-item {% if p == current_page %}active{% endif %}">
-                <a class="page-link" href="?page={{ p }}&status={{ current_status }}"
-                   style="background:var(--accent);border-color:rgba(255,255,255,0.1);color:var(--text-light);">
-                    {{ p }}
-                </a>
-            </li>
-            {% endfor %}
-        </ul>
-    </nav>
+<div class="d-flex justify-content-center mt-4 gap-1">
+    {% for p in range(1, total_pages + 1) %}
+    <a href="?page={{ p }}&status={{ current_status }}"
+       class="btn btn-sm {% if p == current_page %}btn-primary{% endif %}"
+       style="{% if p != current_page %}background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-muted);{% endif %}min-width:36px;">
+        {{ p }}
+    </a>
+    {% endfor %}
 </div>
 {% endif %}
 
 {% else %}
-<div class="content-card">
-    <div class="card-body text-center py-5" style="color:rgba(255,255,255,0.3)">
-        <i class="fas fa-check-double fa-4x mb-3 d-block"></i>
-        <h5>لا توجد فيديوهات {{ 'بانتظار المراجعة' if current_status == 'review' else 'بهذه الحالة' }}</h5>
-        <p style="font-size:0.9rem;">شغّل خط الإنتاج لإنشاء محتوى جديد</p>
-        <button class="btn btn-primary"
+<div class="c-card">
+    <div class="empty-state">
+        <i class="fas fa-check-double"></i>
+        <p>لا توجد فيديوهات {{ 'بانتظار المراجعة' if current_status == 'review' else 'بهذه الحالة' }}</p>
+        <button class="btn btn-primary btn-sm"
                 hx-post="/dashboard/api/run-pipeline" hx-swap="none"
                 onclick="showToast('تم تشغيل خط الإنتاج!', 'success')">
-            <i class="fas fa-magic me-2"></i> تشغيل الإنتاج التلقائي
+            <i class="fas fa-magic me-1"></i> تشغيل الإنتاج التلقائي
         </button>
     </div>
 </div>

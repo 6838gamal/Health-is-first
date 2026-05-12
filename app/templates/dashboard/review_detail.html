@@ -1,206 +1,298 @@
 {% extends "dashboard/base.html" %}
 {% block title %}مراجعة: {{ video.title }} - Health is First{% endblock %}
 {% block page_title %}مراجعة الفيديو{% endblock %}
-{% block page_subtitle %}{{ video.title }}{% endblock %}
+{% block page_subtitle %}{{ video.title[:60] }}{% if video.title|length > 60 %}…{% endif %}{% endblock %}
 
 {% block content %}
+<div class="mb-3">
+    <a href="/dashboard/review" class="btn btn-sm" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-muted);">
+        <i class="fas fa-arrow-right me-1"></i> العودة للقائمة
+    </a>
+</div>
+
 <div class="row g-3">
-    <!-- Left: Video & Thumbnail -->
-    <div class="col-md-4">
-        <!-- Thumbnail Preview -->
-        <div class="content-card mb-3">
-            <div class="card-header"><i class="fas fa-image me-2"></i> الـ Thumbnail</div>
-            <div class="card-body text-center p-2">
-                {% if video.thumbnail_path %}
-                <img src="/media/thumbnails/{{ video.thumbnail_path.split('/')[-1] }}"
+    <!-- ── Left Column: Media & Info ── -->
+    <div class="col-md-4 d-flex flex-column gap-3">
+        <!-- Thumbnail -->
+        <div class="c-card">
+            <div class="c-card-header">
+                <div class="c-card-title"><i class="fas fa-image"></i> الـ Thumbnail</div>
+            </div>
+            <div class="c-card-body" style="padding:0.75rem;">
+                {% if thumbnail_path %}
+                <img src="/media/thumbnails/{{ thumbnail_path.split('/')[-1] }}"
                      style="width:100%;border-radius:10px;" alt="Thumbnail">
                 {% else %}
-                <div style="height:180px;background:#0d1b2a;border-radius:10px;display:flex;align-items:center;justify-content:center;">
-                    <span style="color:rgba(255,255,255,0.2)">لا يوجد Thumbnail</span>
+                <div style="height:160px;background:var(--surface-2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
+                    <i class="fas fa-image" style="font-size:1.5rem;color:rgba(255,255,255,0.12);"></i>
+                    <span style="font-size:0.75rem;color:rgba(255,255,255,0.2);">لا يوجد Thumbnail</span>
                 </div>
                 {% endif %}
             </div>
         </div>
 
         <!-- Video Player -->
-        <div class="content-card mb-3">
-            <div class="card-header"><i class="fas fa-video me-2"></i> معاينة الفيديو</div>
-            <div class="card-body p-2">
+        <div class="c-card">
+            <div class="c-card-header">
+                <div class="c-card-title"><i class="fas fa-play-circle"></i> معاينة الفيديو</div>
+            </div>
+            <div class="c-card-body" style="padding:0.75rem;">
                 {% if video.file_path %}
-                <video controls style="width:100%;border-radius:10px;max-height:400px;">
+                <video controls style="width:100%;border-radius:10px;max-height:350px;background:#000;">
                     <source src="/media/videos/{{ video.file_path.split('/')[-1] }}" type="video/mp4">
+                    متصفحك لا يدعم تشغيل الفيديو
                 </video>
                 {% else %}
-                <div style="height:200px;background:#0d1b2a;border-radius:10px;display:flex;align-items:center;justify-content:center;">
-                    <span style="color:rgba(255,255,255,0.2)">لا يوجد فيديو</span>
+                <div style="height:180px;background:var(--surface-2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
+                    <i class="fas fa-film" style="font-size:1.5rem;color:rgba(255,255,255,0.12);"></i>
+                    <span style="font-size:0.75rem;color:rgba(255,255,255,0.2);">لم يتم تصيير الفيديو بعد</span>
                 </div>
                 {% endif %}
             </div>
         </div>
 
-        <!-- Video Info -->
-        <div class="content-card">
-            <div class="card-header"><i class="fas fa-info-circle me-2"></i> معلومات</div>
-            <div class="card-body">
-                <div class="d-flex justify-content-between mb-2">
-                    <span style="color:rgba(255,255,255,0.5);font-size:0.85rem;">الحالة</span>
-                    <span class="badge-status status-{{ video.status }}">{{ video.status }}</span>
+        <!-- Video Metadata -->
+        <div class="c-card">
+            <div class="c-card-header">
+                <div class="c-card-title"><i class="fas fa-info-circle"></i> معلومات الفيديو</div>
+            </div>
+            <div class="c-card-body">
+                {% set meta = [
+                    ('الحالة', none, video.status),
+                    ('المدة', (video.duration|int ~ ' ثانية') if video.duration else '—', none),
+                    ('الحجم', ("%.1f MB"|format(video.file_size / 1024 / 1024)) if video.file_size else '—', none),
+                    ('الدقة', video.resolution if video.resolution else '—', none),
+                    ('تاريخ الإنشاء', video.created_at.strftime('%Y-%m-%d %H:%M') if video.created_at else '—', none),
+                ] %}
+                {% for label, val, status_val in meta %}
+                <div class="d-flex justify-content-between align-items-center py-2"
+                     style="border-bottom:1px solid var(--border);">
+                    <span style="font-size:0.78rem;color:var(--text-muted);">{{ label }}</span>
+                    {% if status_val %}
+                    <span class="badge-pill {{ status_val }}">{{ status_val }}</span>
+                    {% else %}
+                    <span style="font-size:0.82rem;font-weight:600;">{{ val }}</span>
+                    {% endif %}
                 </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span style="color:rgba(255,255,255,0.5);font-size:0.85rem;">المدة</span>
-                    <span style="font-size:0.85rem;">{{ video.duration|int if video.duration else '-' }} ثانية</span>
+                {% endfor %}
+                {% if video.youtube_url %}
+                <div class="mt-2">
+                    <a href="{{ video.youtube_url }}" target="_blank" class="btn btn-sm w-100"
+                       style="background:rgba(255,0,0,0.1);border:1px solid rgba(255,0,0,0.25);color:#ff4444;">
+                        <i class="fab fa-youtube me-1"></i> مشاهدة على يوتيوب
+                    </a>
                 </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span style="color:rgba(255,255,255,0.5);font-size:0.85rem;">الحجم</span>
-                    <span style="font-size:0.85rem;">{{ "%.1f"|format(video.file_size / 1024 / 1024) if video.file_size else '-' }} MB</span>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span style="color:rgba(255,255,255,0.5);font-size:0.85rem;">الدقة</span>
-                    <span style="font-size:0.85rem;">{{ video.resolution }}</span>
-                </div>
-                <div class="d-flex justify-content-between">
-                    <span style="color:rgba(255,255,255,0.5);font-size:0.85rem;">التاريخ</span>
-                    <span style="font-size:0.85rem;">{{ video.created_at.strftime('%Y-%m-%d') if video.created_at else '-' }}</span>
-                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- Right: Script & Actions -->
-    <div class="col-md-8">
-        <!-- Title & Description -->
-        <div class="content-card mb-3">
-            <div class="card-header"><i class="fas fa-heading me-2"></i> العنوان والوصف</div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label" style="color:rgba(255,255,255,0.6);font-size:0.8rem;">العنوان</label>
-                    <div style="background:#0d1b2a;padding:12px;border-radius:8px;font-weight:600;">
-                        {{ video.title }}
+    <!-- ── Right Column: Content & Actions ── -->
+    <div class="col-md-8 d-flex flex-column gap-3">
+        <!-- Title & Description (Editable) -->
+        <div class="c-card">
+            <div class="c-card-header">
+                <div class="c-card-title"><i class="fas fa-heading"></i> العنوان والوصف</div>
+                <button class="btn btn-sm" id="editToggle"
+                        style="background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text-muted);font-size:0.78rem;"
+                        onclick="toggleEdit()">
+                    <i class="fas fa-pen me-1"></i> تعديل
+                </button>
+            </div>
+            <div class="c-card-body">
+                <form id="metaForm" hx-post="/dashboard/api/videos/{{ video.id }}/update-meta"
+                      hx-swap="none" onsubmit="showToast('تم حفظ التعديلات', 'success')">
+                    <div class="mb-3">
+                        <label style="font-size:0.75rem;color:var(--text-muted);font-weight:600;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.5px;">العنوان</label>
+                        <div id="titleDisplay" style="background:var(--surface-2);padding:10px 14px;border-radius:8px;font-weight:600;font-size:0.9rem;line-height:1.5;">
+                            {{ video.title }}
+                        </div>
+                        <input id="titleInput" type="text" name="title" class="form-control"
+                               value="{{ video.title }}" style="display:none;font-weight:600;">
                     </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label" style="color:rgba(255,255,255,0.6);font-size:0.8rem;">الوصف</label>
-                    <div style="background:#0d1b2a;padding:12px;border-radius:8px;font-size:0.85rem;line-height:1.7;white-space:pre-wrap;">{{ video.description or 'لا يوجد وصف' }}</div>
-                </div>
-                {% if video.tags %}
-                <div>
-                    <label class="form-label" style="color:rgba(255,255,255,0.6);font-size:0.8rem;">الهاشتاقات</label>
-                    <div style="font-size:0.8rem;color:var(--primary);">{{ video.tags }}</div>
-                </div>
-                {% endif %}
+                    <div class="mb-3">
+                        <label style="font-size:0.75rem;color:var(--text-muted);font-weight:600;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.5px;">الوصف</label>
+                        <div id="descDisplay" style="background:var(--surface-2);padding:10px 14px;border-radius:8px;font-size:0.83rem;line-height:1.7;white-space:pre-wrap;max-height:200px;overflow-y:auto;">
+                            {{ video.description or 'لا يوجد وصف' }}
+                        </div>
+                        <textarea id="descInput" name="description" class="form-control" rows="6"
+                                  style="display:none;font-size:0.83rem;line-height:1.7;resize:vertical;">{{ video.description or '' }}</textarea>
+                    </div>
+                    {% if video.tags %}
+                    <div>
+                        <label style="font-size:0.75rem;color:var(--text-muted);font-weight:600;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.5px;">الهاشتاقات</label>
+                        <div style="font-size:0.82rem;color:var(--primary);font-weight:600;">{{ video.tags }}</div>
+                    </div>
+                    {% endif %}
+                    <div id="saveRow" style="display:none;" class="mt-3">
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <i class="fas fa-save me-1"></i> حفظ التعديلات
+                        </button>
+                        <button type="button" class="btn btn-sm ms-2"
+                                style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-muted);"
+                                onclick="cancelEdit()">إلغاء</button>
+                    </div>
+                </form>
             </div>
         </div>
 
         <!-- Script -->
         {% if script %}
-        <div class="content-card mb-3">
-            <div class="card-header"><i class="fas fa-scroll me-2"></i> السكريبت الكامل</div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label" style="color:#e94560;font-size:0.8rem;font-weight:700;">🎣 الـ Hook</label>
-                    <div style="background:#0d1b2a;padding:12px;border-radius:8px;border-right:3px solid #e94560;font-size:0.9rem;">{{ script.hook }}</div>
+        <div class="c-card">
+            <div class="c-card-header">
+                <div class="c-card-title"><i class="fas fa-scroll"></i> السكريبت الكامل</div>
+                <div class="d-flex gap-2" style="font-size:0.75rem;color:var(--text-muted);">
+                    {% if script.estimated_duration %}<span><i class="fas fa-clock me-1"></i>{{ script.estimated_duration }}s</span>{% endif %}
+                    {% if script.word_count %}<span><i class="fas fa-text-width me-1"></i>{{ script.word_count }} كلمة</span>{% endif %}
+                    {% if script.safety_approved %}<span style="color:#3fb950;"><i class="fas fa-shield-alt me-1"></i>آمن طبياً</span>
+                    {% else %}<span style="color:#d29922;"><i class="fas fa-exclamation-triangle me-1"></i>يحتاج مراجعة</span>{% endif %}
                 </div>
-                <div class="mb-3">
-                    <label class="form-label" style="color:#4cc9f0;font-size:0.8rem;font-weight:700;">📝 المحتوى الرئيسي</label>
-                    <div style="background:#0d1b2a;padding:12px;border-radius:8px;border-right:3px solid #4cc9f0;font-size:0.85rem;line-height:1.8;white-space:pre-wrap;">{{ script.body }}</div>
-                </div>
+            </div>
+            <div class="c-card-body d-flex flex-column gap-3">
+                {% if script.hook %}
                 <div>
-                    <label class="form-label" style="color:#52b788;font-size:0.8rem;font-weight:700;">📣 الـ CTA</label>
-                    <div style="background:#0d1b2a;padding:12px;border-radius:8px;border-right:3px solid #52b788;font-size:0.9rem;">{{ script.cta }}</div>
+                    <div style="font-size:0.7rem;font-weight:700;color:#e94560;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">🎣 الـ Hook</div>
+                    <div style="background:var(--surface-2);padding:12px;border-radius:8px;border-right:3px solid #e94560;font-size:0.88rem;line-height:1.7;">{{ script.hook }}</div>
                 </div>
-                <div class="mt-2 d-flex gap-3" style="font-size:0.75rem;color:rgba(255,255,255,0.4)">
-                    <span><i class="fas fa-clock me-1"></i>{{ script.estimated_duration or '-' }}s</span>
-                    <span><i class="fas fa-text-width me-1"></i>{{ script.word_count or '-' }} كلمة</span>
-                    <span>
-                        {% if script.safety_approved %}
-                        <i class="fas fa-shield-alt me-1" style="color:#52b788"></i><span style="color:#52b788">آمن طبياً</span>
-                        {% else %}
-                        <i class="fas fa-exclamation-triangle me-1" style="color:#f4a261"></i><span style="color:#f4a261">يحتاج مراجعة</span>
-                        {% endif %}
-                    </span>
+                {% endif %}
+                {% if script.body %}
+                <div>
+                    <div style="font-size:0.7rem;font-weight:700;color:#58a6ff;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">📝 المحتوى الرئيسي</div>
+                    <div style="background:var(--surface-2);padding:12px;border-radius:8px;border-right:3px solid #58a6ff;font-size:0.83rem;line-height:1.8;white-space:pre-wrap;max-height:300px;overflow-y:auto;">{{ script.body }}</div>
                 </div>
+                {% endif %}
+                {% if script.cta %}
+                <div>
+                    <div style="font-size:0.7rem;font-weight:700;color:#3fb950;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">📣 الـ CTA</div>
+                    <div style="background:var(--surface-2);padding:12px;border-radius:8px;border-right:3px solid #3fb950;font-size:0.88rem;line-height:1.7;">{{ script.cta }}</div>
+                </div>
+                {% endif %}
             </div>
         </div>
         {% endif %}
 
-        <!-- Action Buttons -->
+        <!-- Action Panel -->
         {% if video.status == 'review' %}
-        <div class="content-card">
-            <div class="card-header"><i class="fas fa-tasks me-2"></i> الإجراءات</div>
-            <div class="card-body">
+        <div class="c-card">
+            <div class="c-card-header">
+                <div class="c-card-title"><i class="fas fa-gavel"></i> قرار النشر</div>
+            </div>
+            <div class="c-card-body">
                 <div class="row g-3">
                     <!-- Approve & Publish Now -->
                     <div class="col-md-6">
-                        <div style="background:#0d1b2a;border-radius:10px;padding:16px;border:1px solid rgba(82,183,136,0.3)">
-                            <div style="color:#52b788;font-weight:700;margin-bottom:8px;">
+                        <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.2);border-radius:12px;padding:16px;">
+                            <div style="color:#3fb950;font-weight:700;font-size:0.85rem;margin-bottom:10px;">
                                 <i class="fas fa-check-circle me-1"></i> موافقة ونشر فوري
                             </div>
-                            <form hx-post="/dashboard/api/videos/{{ video.id }}/approve"
-                                  hx-swap="none"
-                                  onsubmit="showToast('تمت الموافقة! جاري الرفع...', 'success')">
-                                <button type="submit" class="btn btn-success w-100">
-                                    <i class="fab fa-youtube me-1"></i> نشر الآن
-                                </button>
-                            </form>
+                            <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:12px;">سيتم رفع الفيديو على يوتيوب فور الموافقة</p>
+                            <button class="btn btn-sm w-100"
+                                    style="background:#3fb950;border-color:#3fb950;color:#fff;font-weight:700;"
+                                    hx-post="/dashboard/api/videos/{{ video.id }}/approve"
+                                    hx-swap="none"
+                                    onclick="showToast('تمت الموافقة! جاري الرفع على يوتيوب...', 'success')">
+                                <i class="fab fa-youtube me-1"></i> نشر الآن
+                            </button>
                         </div>
                     </div>
                     <!-- Schedule -->
                     <div class="col-md-6">
-                        <div style="background:#0d1b2a;border-radius:10px;padding:16px;border:1px solid rgba(244,162,97,0.3)">
-                            <div style="color:#f4a261;font-weight:700;margin-bottom:8px;">
+                        <div style="background:rgba(210,153,34,0.06);border:1px solid rgba(210,153,34,0.2);border-radius:12px;padding:16px;">
+                            <div style="color:#d29922;font-weight:700;font-size:0.85rem;margin-bottom:10px;">
                                 <i class="fas fa-calendar-alt me-1"></i> جدولة النشر
                             </div>
+                            <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:12px;">اختر وقتاً محدداً للنشر التلقائي</p>
                             <form hx-post="/dashboard/api/videos/{{ video.id }}/schedule"
                                   hx-swap="none"
-                                  onsubmit="showToast('تمت الجدولة!', 'warning')">
+                                  onsubmit="showToast('تمت الجدولة بنجاح!', 'warning')">
                                 <input type="datetime-local" name="scheduled_at"
-                                       class="form-control form-control-sm mb-2"
-                                       style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);color:#fff;">
-                                <button type="submit" class="btn btn-warning w-100 text-dark">
-                                    <i class="fas fa-clock me-1"></i> جدول
+                                       class="form-control form-control-sm mb-2">
+                                <button type="submit" class="btn btn-sm w-100"
+                                        style="background:#d29922;border-color:#d29922;color:#fff;font-weight:700;">
+                                    <i class="fas fa-clock me-1"></i> جدول النشر
                                 </button>
                             </form>
                         </div>
                     </div>
                     <!-- Reject -->
                     <div class="col-md-6">
-                        <form hx-post="/dashboard/api/videos/{{ video.id }}/reject"
-                              hx-swap="none"
-                              onsubmit="if(confirm('هل تريد رفض هذا الفيديو؟')){showToast('تم الرفض', 'danger');return true;}return false;">
-                            <button type="submit" class="btn btn-outline-danger w-100">
-                                <i class="fas fa-times me-1"></i> رفض الفيديو
+                        <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.2);border-radius:12px;padding:16px;">
+                            <div style="color:#f85149;font-weight:700;font-size:0.85rem;margin-bottom:10px;">
+                                <i class="fas fa-times-circle me-1"></i> رفض الفيديو
+                            </div>
+                            <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:12px;">سيتم وضع علامة مرفوض دون نشر</p>
+                            <button class="btn btn-sm w-100"
+                                    style="background:rgba(248,81,73,0.12);border:1px solid rgba(248,81,73,0.3);color:#f85149;font-weight:700;"
+                                    hx-post="/dashboard/api/videos/{{ video.id }}/reject"
+                                    hx-swap="none"
+                                    onclick="if(!confirm('هل أنت متأكد من رفض هذا الفيديو؟')) event.preventDefault(); else showToast('تم رفض الفيديو', 'danger')">
+                                <i class="fas fa-times me-1"></i> رفض
                             </button>
-                        </form>
+                        </div>
                     </div>
                     <!-- Regenerate -->
                     <div class="col-md-6">
-                        <form hx-post="/dashboard/api/videos/{{ video.id }}/regenerate"
-                              hx-swap="none"
-                              onsubmit="showToast('جاري إعادة الإنتاج...', 'info')">
-                            <button type="submit" class="btn btn-outline-info w-100">
+                        <div style="background:rgba(88,166,255,0.06);border:1px solid rgba(88,166,255,0.2);border-radius:12px;padding:16px;">
+                            <div style="color:#58a6ff;font-weight:700;font-size:0.85rem;margin-bottom:10px;">
+                                <i class="fas fa-redo me-1"></i> إعادة الإنتاج
+                            </div>
+                            <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:12px;">إنشاء نسخة جديدة من الفيديو بنفس السكريبت</p>
+                            <button class="btn btn-sm w-100"
+                                    style="background:rgba(88,166,255,0.12);border:1px solid rgba(88,166,255,0.3);color:#58a6ff;font-weight:700;"
+                                    hx-post="/dashboard/api/videos/{{ video.id }}/regenerate"
+                                    hx-swap="none"
+                                    onclick="showToast('جاري إعادة إنتاج الفيديو...', 'info')">
                                 <i class="fas fa-redo me-1"></i> إعادة الإنتاج
                             </button>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         {% elif video.status == 'published' %}
-        <div class="alert alert-success">
-            <i class="fas fa-check-circle me-2"></i> تم نشر الفيديو بنجاح على يوتيوب
-            {% if video.youtube_url %}
-            <a href="{{ video.youtube_url }}" target="_blank" class="btn btn-sm btn-success ms-3">
-                <i class="fab fa-youtube me-1"></i> مشاهدة على يوتيوب
-            </a>
-            {% endif %}
+        <div style="background:rgba(63,185,80,0.08);border:1px solid rgba(63,185,80,0.2);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;">
+            <i class="fas fa-check-circle" style="color:#3fb950;font-size:1.5rem;"></i>
+            <div>
+                <div style="font-weight:700;color:#3fb950;">تم النشر بنجاح على يوتيوب</div>
+                {% if video.youtube_url %}
+                <a href="{{ video.youtube_url }}" target="_blank" class="btn btn-sm mt-2"
+                   style="background:rgba(255,0,0,0.1);border:1px solid rgba(255,0,0,0.25);color:#ff4444;font-size:0.8rem;">
+                    <i class="fab fa-youtube me-1"></i> مشاهدة على يوتيوب
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% elif video.status == 'scheduled' %}
+        <div style="background:rgba(210,153,34,0.08);border:1px solid rgba(210,153,34,0.2);border-radius:12px;padding:16px;">
+            <div style="font-weight:700;color:#d29922;"><i class="fas fa-clock me-2"></i>مجدول للنشر</div>
         </div>
         {% endif %}
-
-        <div class="mt-3">
-            <a href="/dashboard/review" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-right me-1"></i> العودة للقائمة
-            </a>
-        </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+let editMode = false;
+function toggleEdit() {
+    editMode = !editMode;
+    document.getElementById('titleDisplay').style.display = editMode ? 'none' : 'block';
+    document.getElementById('titleInput').style.display = editMode ? 'block' : 'none';
+    document.getElementById('descDisplay').style.display = editMode ? 'none' : 'block';
+    document.getElementById('descInput').style.display = editMode ? 'block' : 'none';
+    document.getElementById('saveRow').style.display = editMode ? 'block' : 'none';
+    document.getElementById('editToggle').innerHTML = editMode
+        ? '<i class="fas fa-times me-1"></i> إلغاء التعديل'
+        : '<i class="fas fa-pen me-1"></i> تعديل';
+}
+function cancelEdit() {
+    editMode = false;
+    document.getElementById('titleDisplay').style.display = 'block';
+    document.getElementById('titleInput').style.display = 'none';
+    document.getElementById('descDisplay').style.display = 'block';
+    document.getElementById('descInput').style.display = 'none';
+    document.getElementById('saveRow').style.display = 'none';
+    document.getElementById('editToggle').innerHTML = '<i class="fas fa-pen me-1"></i> تعديل';
+}
+</script>
+{% endblock %}
 {% endblock %}

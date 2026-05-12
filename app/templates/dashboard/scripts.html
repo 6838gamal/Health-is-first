@@ -1,61 +1,80 @@
 {% extends "dashboard/base.html" %}
 {% block title %}السكريبتات - Health is First{% endblock %}
 {% block page_title %}إدارة السكريبتات{% endblock %}
-{% block page_subtitle %}السكريبتات المولّدة بالذكاء الاصطناعي{% endblock %}
+{% block page_subtitle %}{{ scripts|length }} سكريبت مولّد بالذكاء الاصطناعي{% endblock %}
 
 {% block content %}
-<div class="content-card">
-    <div class="card-header d-flex justify-content-between">
-        <span><i class="fas fa-file-alt me-2" style="color:var(--primary)"></i> قائمة السكريبتات</span>
-        <span style="color:rgba(255,255,255,0.4);font-size:0.85rem;">{{ scripts|length }} سكريبت</span>
+<div class="c-card">
+    <div class="c-card-header">
+        <div class="c-card-title"><i class="fas fa-scroll"></i> قائمة السكريبتات</div>
+        <div class="d-flex gap-2 align-items-center">
+            <span style="font-size:0.78rem;color:var(--text-muted);">{{ scripts|length }} سكريبت</span>
+        </div>
     </div>
-    <div class="card-body p-0">
+    <div class="c-card-body no-pad">
         {% if scripts %}
         <div class="table-responsive">
-            <table class="table mb-0">
+            <table class="data-table">
                 <thead>
                     <tr>
                         <th>العنوان</th>
                         <th>الحالة</th>
                         <th>المدة التقديرية</th>
                         <th>اللغة</th>
-                        <th>السلامة</th>
+                        <th>السلامة الطبية</th>
                         <th>التاريخ</th>
                         <th>الإجراء</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for script in scripts %}
+                    {% for s in scripts %}
                     <tr>
-                        <td>
-                            <div style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.85rem;">
-                                {{ script.title }}
+                        <td style="max-width:280px;">
+                            <div style="font-size:0.85rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ s.title }}">
+                                {{ s.title }}
                             </div>
                         </td>
-                        <td><span class="badge-status status-{{ script.status }}">{{ script.status }}</span></td>
-                        <td style="font-size:0.85rem;">{{ script.estimated_duration or '-' }}s</td>
+                        <td><span class="badge-pill {{ s.status }}">{{ s.status }}</span></td>
+                        <td style="color:var(--text-muted);font-size:0.82rem;">
+                            {% if s.estimated_duration %}
+                            <i class="fas fa-clock me-1" style="font-size:0.7rem;"></i>{{ s.estimated_duration }}s
+                            {% else %}—{% endif %}
+                        </td>
                         <td>
-                            <span style="font-size:0.8rem;background:rgba(255,255,255,0.05);padding:2px 8px;border-radius:10px;">
-                                {{ script.language.upper() }}
+                            <span style="background:rgba(88,166,255,0.1);color:#58a6ff;padding:2px 8px;border-radius:6px;font-size:0.72rem;font-weight:700;">
+                                {{ s.language.upper() if s.language else '—' }}
                             </span>
                         </td>
                         <td>
-                            {% if script.safety_approved %}
-                            <i class="fas fa-shield-alt" style="color:#52b788;" title="آمن طبياً"></i>
+                            {% if s.safety_approved %}
+                            <span style="color:#3fb950;font-size:0.8rem;font-weight:600;">
+                                <i class="fas fa-shield-alt me-1"></i>آمن
+                            </span>
                             {% else %}
-                            <i class="fas fa-exclamation-triangle" style="color:#f4a261;" title="يحتاج مراجعة"></i>
+                            <span style="color:#d29922;font-size:0.8rem;">
+                                <i class="fas fa-exclamation-triangle me-1"></i>يحتاج مراجعة
+                            </span>
                             {% endif %}
                         </td>
-                        <td style="font-size:0.8rem;color:rgba(255,255,255,0.4);">{{ script.created_at }}</td>
+                        <td style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;">{{ s.created_at[:10] if s.created_at else '—' }}</td>
                         <td>
-                            {% if script.status in ['review', 'approved'] %}
-                            <button class="btn btn-sm btn-primary"
-                                    hx-post="/api/v1/videos/render/{{ script.id }}"
-                                    hx-swap="none"
-                                    onclick="showToast('جاري إنتاج الفيديو...', 'info')">
-                                <i class="fas fa-video me-1"></i> إنتاج
-                            </button>
-                            {% endif %}
+                            <div class="d-flex gap-1">
+                                <button class="btn btn-sm"
+                                        style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-muted);font-size:0.75rem;"
+                                        onclick="openScriptModal('{{ s.id }}', '{{ s.title|replace("'", "\\'") }}')"
+                                        title="معاينة السكريبت">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                {% if s.status in ['review', 'approved'] %}
+                                <button class="btn btn-sm btn-primary"
+                                        hx-post="/api/v1/videos/render/{{ s.id }}"
+                                        hx-swap="none"
+                                        onclick="showToast('جاري إنتاج الفيديو...', 'info')"
+                                        style="font-size:0.75rem;">
+                                    <i class="fas fa-film me-1"></i> إنتاج
+                                </button>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -63,11 +82,61 @@
             </table>
         </div>
         {% else %}
-        <div class="text-center py-5" style="color:rgba(255,255,255,0.3)">
-            <i class="fas fa-file-alt fa-3x mb-3 d-block"></i>
-            <p>لا توجد سكريبتات. قم بتوليد الأفكار أولاً</p>
+        <div class="empty-state">
+            <i class="fas fa-scroll"></i>
+            <p>لا توجد سكريبتات بعد</p>
+            <p style="font-size:0.8rem;">قم بتوليد الأفكار أولاً ثم أنشئ سكريبتات منها</p>
+            <a href="/dashboard/ideas" class="btn btn-primary btn-sm">
+                <i class="fas fa-lightbulb me-1"></i> الذهاب لصفحة الأفكار
+            </a>
         </div>
         {% endif %}
     </div>
 </div>
+
+<!-- Script Preview Modal -->
+<div class="modal fade" id="scriptModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;">
+            <div class="modal-header" style="border-color:var(--border);">
+                <h6 class="modal-title fw-bold" id="scriptModalTitle">معاينة السكريبت</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="scriptModalBody">
+                <div class="text-center py-4" style="color:var(--text-muted);">
+                    <span class="spinner-border"></span>
+                    <p class="mt-2">جاري التحميل...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function openScriptModal(scriptId, title) {
+    document.getElementById('scriptModalTitle').textContent = title;
+    document.getElementById('scriptModalBody').innerHTML = `<div class="text-center py-4" style="color:var(--text-muted);"><span class="spinner-border"></span><p class="mt-2">جاري التحميل...</p></div>`;
+    const modal = new bootstrap.Modal(document.getElementById('scriptModal'));
+    modal.show();
+    fetch('/api/v1/scripts/' + scriptId)
+        .then(r => r.json())
+        .then(data => {
+            const d = data.data || data;
+            document.getElementById('scriptModalBody').innerHTML = `
+                ${d.hook ? `<div class="mb-3"><label style="color:#e94560;font-size:0.75rem;font-weight:700;letter-spacing:1px;">🎣 الـ HOOK</label><div style="background:var(--surface-2);padding:12px;border-radius:8px;border-right:3px solid #e94560;font-size:0.88rem;line-height:1.7;margin-top:6px;">${d.hook}</div></div>` : ''}
+                ${d.body ? `<div class="mb-3"><label style="color:#58a6ff;font-size:0.75rem;font-weight:700;letter-spacing:1px;">📝 المحتوى الرئيسي</label><div style="background:var(--surface-2);padding:12px;border-radius:8px;border-right:3px solid #58a6ff;font-size:0.85rem;line-height:1.8;white-space:pre-wrap;margin-top:6px;">${d.body}</div></div>` : ''}
+                ${d.cta ? `<div><label style="color:#3fb950;font-size:0.75rem;font-weight:700;letter-spacing:1px;">📣 الـ CTA</label><div style="background:var(--surface-2);padding:12px;border-radius:8px;border-right:3px solid #3fb950;font-size:0.88rem;margin-top:6px;">${d.cta}</div></div>` : ''}
+                <div class="d-flex gap-3 mt-3" style="font-size:0.75rem;color:var(--text-muted);">
+                    ${d.estimated_duration ? `<span><i class="fas fa-clock me-1"></i>${d.estimated_duration}s</span>` : ''}
+                    ${d.word_count ? `<span><i class="fas fa-text-width me-1"></i>${d.word_count} كلمة</span>` : ''}
+                    ${d.safety_approved ? `<span style="color:#3fb950;"><i class="fas fa-shield-alt me-1"></i>آمن طبياً</span>` : ''}
+                </div>`;
+        })
+        .catch(() => {
+            document.getElementById('scriptModalBody').innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>تعذّر تحميل السكريبت</p></div>`;
+        });
+}
+</script>
+{% endblock %}
 {% endblock %}

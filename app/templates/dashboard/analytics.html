@@ -1,44 +1,137 @@
 {% extends "dashboard/base.html" %}
 {% block title %}التحليلات - Health is First{% endblock %}
 {% block page_title %}التحليلات{% endblock %}
-{% block page_subtitle %}تحليل أداء المحتوى على يوتيوب{% endblock %}
+{% block page_subtitle %}أداء المحتوى على يوتيوب{% endblock %}
 
 {% block content %}
-<!-- Overview Stats -->
+<!-- Metric Cards -->
 <div class="row g-3 mb-4">
-    {% set metric_cards = [
-        (overview.total_views, 'المشاهدات', 'fa-eye', '#52b788'),
-        (overview.total_likes, 'الإعجابات', 'fa-thumbs-up', '#e94560'),
-        (overview.total_comments, 'التعليقات', 'fa-comment', '#4cc9f0'),
-        (overview.total_published_videos, 'فيديوهات منشورة', 'fa-video', '#f4a261'),
-    ] %}
-    {% for val, label, icon, color in metric_cards %}
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background: {{ color }}20; color: {{ color }}">
-                <i class="fas {{ icon }}"></i>
-            </div>
-            <div class="stat-value">{{ "{:,}".format(val|int) }}</div>
-            <div class="stat-label">{{ label }}</div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="--accent-color:#3fb950">
+            <div class="stat-icon" style="background:rgba(63,185,80,0.12);color:#3fb950"><i class="fas fa-eye"></i></div>
+            <div class="stat-value">{{ "{:,}".format(overview.total_views|int) }}</div>
+            <div class="stat-label">إجمالي المشاهدات</div>
         </div>
     </div>
-    {% endfor %}
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="--accent-color:#e94560">
+            <div class="stat-icon" style="background:rgba(233,69,96,0.12);color:#e94560"><i class="fas fa-thumbs-up"></i></div>
+            <div class="stat-value">{{ "{:,}".format(overview.total_likes|int) }}</div>
+            <div class="stat-label">إجمالي الإعجابات</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="--accent-color:#58a6ff">
+            <div class="stat-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff"><i class="fas fa-comment"></i></div>
+            <div class="stat-value">{{ "{:,}".format(overview.total_comments|int) }}</div>
+            <div class="stat-label">إجمالي التعليقات</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="--accent-color:#d29922">
+            <div class="stat-icon" style="background:rgba(210,153,34,0.12);color:#d29922"><i class="fas fa-video"></i></div>
+            <div class="stat-value">{{ overview.total_published_videos }}</div>
+            <div class="stat-label">فيديوهات منشورة</div>
+        </div>
+    </div>
 </div>
 
-<!-- Top Videos Table -->
-<div class="content-card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="fas fa-trophy me-2" style="color:var(--primary)"></i> أفضل الفيديوهات</span>
-        <button class="btn btn-sm btn-outline-primary"
+<!-- Performance Overview -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="c-card h-100">
+            <div class="c-card-header">
+                <div class="c-card-title"><i class="fas fa-chart-pie"></i> مؤشرات الأداء</div>
+            </div>
+            <div class="c-card-body">
+                <div class="d-flex flex-column gap-3">
+                    <!-- CTR -->
+                    <div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span style="font-size:0.82rem;font-weight:600;">معدل النقر (CTR)</span>
+                            <span style="font-size:0.82rem;font-weight:700;color:#58a6ff;">{{ "%.1f%%"|format(overview.avg_ctr) }}</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.06);border-radius:6px;height:6px;">
+                            <div style="width:{{ [overview.avg_ctr * 10, 100]|min }}%;height:100%;background:#58a6ff;border-radius:6px;"></div>
+                        </div>
+                    </div>
+                    <!-- Retention -->
+                    <div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span style="font-size:0.82rem;font-weight:600;">متوسط الاحتفاظ</span>
+                            <span style="font-size:0.82rem;font-weight:700;color:#3fb950;">{{ "%.1f%%"|format(overview.avg_retention) }}</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.06);border-radius:6px;height:6px;">
+                            <div style="width:{{ [overview.avg_retention, 100]|min }}%;height:100%;background:#3fb950;border-radius:6px;"></div>
+                        </div>
+                    </div>
+                    <!-- Engagement Rate -->
+                    {% if overview.total_views > 0 %}
+                    {% set engagement = ((overview.total_likes + overview.total_comments) / overview.total_views * 100) %}
+                    <div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span style="font-size:0.82rem;font-weight:600;">معدل التفاعل</span>
+                            <span style="font-size:0.82rem;font-weight:700;color:#e94560;">{{ "%.2f%%"|format(engagement) }}</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.06);border-radius:6px;height:6px;">
+                            <div style="width:{{ [engagement * 5, 100]|min }}%;height:100%;background:#e94560;border-radius:6px;"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="c-card h-100">
+            <div class="c-card-header">
+                <div class="c-card-title"><i class="fas fa-chart-bar"></i> إحصاءات سريعة</div>
+                <button class="btn btn-sm"
+                        style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-muted);font-size:0.78rem;"
+                        hx-post="/dashboard/api/sync-analytics" hx-swap="none"
+                        onclick="showToast('جاري مزامنة التحليلات...', 'info')">
+                    <i class="fas fa-sync me-1"></i> تحديث
+                </button>
+            </div>
+            <div class="c-card-body">
+                <div class="row g-3">
+                    {% set quick_stats = [
+                        ('متوسط المشاهدات/فيديو', (overview.total_views / overview.total_published_videos)|int if overview.total_published_videos > 0 else 0, '#3fb950'),
+                        ('متوسط الإعجابات/فيديو', (overview.total_likes / overview.total_published_videos)|int if overview.total_published_videos > 0 else 0, '#e94560'),
+                    ] %}
+                    {% for label, val, color in quick_stats %}
+                    <div class="col-6">
+                        <div style="background:var(--surface-2);border-radius:10px;padding:12px;text-align:center;border:1px solid var(--border);">
+                            <div style="font-size:1.4rem;font-weight:800;color:{{ color }};">{{ "{:,}".format(val) }}</div>
+                            <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">{{ label }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if not top_videos %}
+                <div class="empty-state" style="padding:2rem 0 0;">
+                    <p style="font-size:0.82rem;">لا توجد بيانات بعد. انشر فيديوهات ثم زامن التحليلات</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Videos -->
+{% if top_videos %}
+<div class="c-card">
+    <div class="c-card-header">
+        <div class="c-card-title"><i class="fas fa-trophy"></i> أفضل الفيديوهات أداءً</div>
+        <button class="btn btn-sm btn-primary"
                 hx-post="/dashboard/api/sync-analytics" hx-swap="none"
                 onclick="showToast('جاري مزامنة التحليلات...', 'info')">
-            <i class="fas fa-sync me-1"></i> تحديث
+            <i class="fas fa-sync me-1"></i> مزامنة
         </button>
     </div>
-    <div class="card-body p-0">
-        {% if top_videos %}
+    <div class="c-card-body no-pad">
         <div class="table-responsive">
-            <table class="table mb-0">
+            <table class="data-table">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -48,26 +141,40 @@
                         <th>التعليقات</th>
                         <th>CTR</th>
                         <th>الاحتفاظ</th>
-                        <th>رابط</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in top_videos %}
                     <tr>
-                        <td style="color:rgba(255,255,255,0.4)">{{ loop.index }}</td>
                         <td>
-                            <div style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.85rem;" title="{{ item.title }}">
+                            <span style="font-size:0.8rem;font-weight:700;color:{% if loop.index == 1 %}#d29922{% elif loop.index == 2 %}rgba(255,255,255,0.5){% elif loop.index == 3 %}#c1440e{% else %}var(--text-muted){% endif %};">
+                                {% if loop.index <= 3 %}🏆{% endif %} {{ loop.index }}
+                            </span>
+                        </td>
+                        <td style="max-width:200px;">
+                            <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.83rem;font-weight:600;" title="{{ item.title }}">
                                 {{ item.title }}
                             </div>
                         </td>
-                        <td><strong>{{ "{:,}".format(item.views) }}</strong></td>
-                        <td>{{ "{:,}".format(item.likes) }}</td>
-                        <td>{{ "{:,}".format(item.comments) }}</td>
-                        <td>{{ "%.1f%%"|format(item.ctr) }}</td>
-                        <td>{{ "%.1f%%"|format(item.avg_view_percentage) }}</td>
+                        <td style="font-weight:700;color:#3fb950;">{{ "{:,}".format(item.views) }}</td>
+                        <td style="color:var(--text-muted);">{{ "{:,}".format(item.likes) }}</td>
+                        <td style="color:var(--text-muted);">{{ "{:,}".format(item.comments) }}</td>
+                        <td>
+                            <span style="color:#58a6ff;font-weight:600;font-size:0.82rem;">{{ "%.1f%%"|format(item.ctr) }}</span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width:50px;background:rgba(255,255,255,0.06);border-radius:4px;height:5px;">
+                                    <div style="width:{{ item.avg_view_percentage }}%;height:100%;background:#3fb950;border-radius:4px;"></div>
+                                </div>
+                                <span style="font-size:0.78rem;color:#3fb950;font-weight:600;">{{ "%.0f%%"|format(item.avg_view_percentage) }}</span>
+                            </div>
+                        </td>
                         <td>
                             {% if item.youtube_url %}
-                            <a href="{{ item.youtube_url }}" target="_blank" style="color:var(--primary)">
+                            <a href="{{ item.youtube_url }}" target="_blank"
+                               style="color:#ff4444;font-size:1rem;">
                                 <i class="fab fa-youtube"></i>
                             </a>
                             {% endif %}
@@ -77,13 +184,7 @@
                 </tbody>
             </table>
         </div>
-        {% else %}
-        <div class="text-center py-5" style="color:rgba(255,255,255,0.3)">
-            <i class="fas fa-chart-line fa-3x mb-3 d-block"></i>
-            <p>لا توجد بيانات تحليلية بعد</p>
-            <p style="font-size:0.8rem;">قم بنشر فيديوهات أولاً ثم زامن التحليلات</p>
-        </div>
-        {% endif %}
     </div>
 </div>
+{% endif %}
 {% endblock %}
